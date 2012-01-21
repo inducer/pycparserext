@@ -7,6 +7,19 @@ import pycparser.c_ast as c_ast
 
 # {{{ ast extensions
 
+class TypeList(c_ast.Node):
+    def __init__(self, types, coord=None):
+        self.types = types
+        self.coord = coord
+
+    def children(self):
+        nodelist = []
+        for i, child in enumerate(self.types or []):
+            nodelist.append(("types[%d]" % i, child))
+        return tuple(nodelist)
+
+    attr_names = ()
+
 class Asm(c_ast.Node):
     def __init__(self, asm_keyword, template, output_operands, input_operands, clobbered_regs, coord=None):
         self.asm_keyword = asm_keyword
@@ -246,7 +259,7 @@ class GnuCParser(CParserBase, _AttributesMixin, _AsmMixin):
         """ postfix_expression  : __BUILTIN_TYPES_COMPATIBLE_P LPAREN parameter_declaration COMMA parameter_declaration RPAREN
         """
         p[0] = c_ast.FuncCall(c_ast.ID(p[1], self._coord(p.lineno(1))),
-                c_ast.TypeList([p[3], p[5]], self._coord(p.lineno(2))))
+                TypeList([p[3], p[5]], self._coord(p.lineno(2))))
 
 # }}}
 
