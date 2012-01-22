@@ -14,7 +14,25 @@ class GNUCLexer(CLexerBase):
 
 
 class OpenCLCLexer(CLexerBase):
-    pass
+    tokens = CLexerBase.tokens + ('LINECOMMENT',)
+    states = (
+            #('comment', 'exclusive'),
+            #('preproc', 'exclusive'),
+            ('ppline', 'exclusive'), # unused
+            )
+
+    def t_LINECOMMENT(self, t):
+        r'\/\/([^\n]+)\n'
+        t.lexer.lineno += t.value.count("\n")
+
+    # overrides pycparser, must have same name
+    def t_PPHASH(self, t):
+        r'[ \t]*\#([^\n]|\\\n)+[^\n\\]\n'
+        t.lexer.lineno += t.value.count("\n")
+        return t
+
+
+
 
 def add_lexer_keywords(cls, keywords):
     cls.keywords = cls.keywords + tuple(
@@ -33,12 +51,10 @@ add_lexer_keywords(GNUCLexer, [
     '__const', '__restrict', '__inline', '__inline__',
     '__extension__'])
 
+_CL_KEYWORDS = ['kernel', 'constant', 'global', 'local', 'private',
+        "read_only", "write_only", "read_write"]
 add_lexer_keywords(OpenCLCLexer, [
-    '__attribute__', '__asm__', '__asm',
-    '__kernel', 'kernel',
-    '__constant', 'constant',
-    '__global', 'global',
-    '__local', 'local',
-    '__private', 'private',
-    ])
+    '__attribute__', '__asm__', '__asm']
+    + _CL_KEYWORDS + ["__"+kw for kw in _CL_KEYWORDS])
 
+# vim: fdm=marker

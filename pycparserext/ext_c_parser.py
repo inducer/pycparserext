@@ -1,9 +1,67 @@
 from __future__ import division
 
-from pycparser.c_parser import CParser as CParserBase
+import pycparser.c_parser
 import pycparser.c_ast as c_ast
+import ply.yacc
 
 
+
+class CParserBase(pycparser.c_parser.CParser):
+    OPT_RULES = [
+        'abstract_declarator',
+        'assignment_expression',
+        'declaration_list',
+        'declaration_specifiers',
+        'designation',
+        'expression',
+        'identifier_list',
+        'init_declarator_list',
+        'parameter_type_list',
+        'specifier_qualifier_list',
+        'block_item_list',
+        'type_qualifier_list',
+        'struct_declarator_list'
+    ]
+
+    def __init__(self, yacc_debug=False):
+        self.clex = self.lexer_class(
+            error_func=self._lex_error_func,
+            type_lookup_func=self._lex_type_lookup_func)
+
+        self.clex.build()
+        self.tokens = self.clex.tokens
+
+        for rule in self.OPT_RULES:
+            self._create_opt_rule(rule)
+
+        self.cparser = ply.yacc.yacc(
+            module=self,
+            start='translation_unit',
+            debug=yacc_debug, write_tables=False)
+
+    def parse(self, text, filename='', debuglevel=0,
+            initial_type_symbols=set()):
+        self.clex.filename = filename
+        self.clex.reset_lineno()
+
+        # _scope_stack[-1] is the current (topmost) scope.
+
+        self._scope_stack = [set(initial_type_symbols)
+                | getattr(self, "initial_type_symbols")]
+
+        if not text or text.isspace():
+            return c_ast.FileAST([])
+        else:
+            return self.cparser.parse(text, lexer=self.clex, debug=debuglevel)
+
+    def p_translation_unit_2(self, p):
+        """ translation_unit    : translation_unit external_declaration
+        """
+        if p[1].ext is None:
+            p[1].ext = p[2]
+        elif p[2] is not None:
+            p[1].ext.extend(p[2])
+        p[0] = p[1]
 
 # {{{ ast extensions
 
@@ -38,6 +96,16 @@ class Asm(c_ast.Node):
         return tuple(nodelist)
 
     attr_names = ('asm_keyword',)
+
+class PreprocessorLine(c_ast.Node):
+    def __init__(self, contents, coord=None):
+        self.contents = contents
+        self.coord = coord
+
+    def children(self):
+        return ()
+
+    attr_names = ("contents")
 
 class TypeOfDeclaration(c_ast.Node):
     def __init__(self, declaration, coord=None):
@@ -118,22 +186,33 @@ class _AttributesMixin(object):
         """
         p[0] = c_ast.ID(name="const", coord=self._coord(p.lineno(1)))
 
-    def p_attribute_2(self, p):
-        """ attribute : __CONST
-        """
-        p[0] = c_ast.ID(name="__const", coord=self._coord(p.lineno(1)))
-
     def p_attribute_3(self, p):
         """ attribute : assignment_expression
         """
         p[0] = p[1]
+
+    # {{{ /!\ names must match C parser to override
+
+    def p_declarator_1(self, p):
+        """ declarator  : direct_declarator attributes_opt
+        """
+        if p[2].exprs:
+            if not isinstance(p[1], c_ast.TypeDecl):
+                raise NotImplementedError(
+                        "cannot attach attributes to nodes of type '%s'"
+                        % type(p[1]))
+
+            p[1].attributes = p[2]
+
+        p[0] = p[1]
+
+    # }}}
 
 # }}}
 
 # {{{ asm
 
 class _AsmMixin(object):
-
     def p_asm_opt_1(self, p):
         """ asm_opt : empty
         """
@@ -170,12 +249,51 @@ class _AsmMixin(object):
         """
         p[0] = p[1]
 
+    def p_statement_gnu(self, p):
+        """ statement   : asm
+        """
+        p[0] = p[1]
+
+
+class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
+    # {{{ /!\ names must match C parser to override
+
+    def p_direct_declarator_5(self, p):
+        """ direct_declarator   : direct_declarator LPAREN parameter_type_list RPAREN asm_opt attributes_opt
+                                | direct_declarator LPAREN identifier_list_opt RPAREN asm_opt attributes_opt
+        """
+        func = FuncDeclExt(
+            args=p[3],
+            type=None,
+            attributes=p[6],
+            asm=p[5],
+            coord=p[1].coord)
+
+        p[0] = self._type_modify_decl(decl=p[1], modifier=func)
+
+    def p_direct_abstract_declarator_6(self, p):
+        """ direct_abstract_declarator  : direct_abstract_declarator LPAREN parameter_type_list_opt RPAREN asm_opt attributes_opt
+        """
+        func = FuncDeclExt(
+            args=p[3],
+            type=None,
+            attributes=p[6],
+            asm=p[5],
+            coord=p[1].coord)
+
+        p[0] = self._type_modify_decl(decl=p[1], modifier=func)
+
+    # }}}
 # }}}
 
 # {{{ gnu parser
 
-class GnuCParser(CParserBase, _AttributesMixin, _AsmMixin):
+class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     # TODO: __extension__
+
+    from pycparserext.ext_c_lexer import GNUCLexer as lexer_class
+
+    initial_type_symbols = ["__builtin_va_list"]
 
     def p_function_specifier_gnu(self, p):
         """ function_specifier  : __INLINE
@@ -188,20 +306,6 @@ class GnuCParser(CParserBase, _AttributesMixin, _AsmMixin):
                             | __RESTRICT
                             | __EXTENSION__
         """
-        p[0] = p[1]
-
-    # /!\ name must match C parser
-    def p_declarator_1(self, p):
-        """ declarator  : direct_declarator attributes_opt
-        """
-        if p[2].exprs:
-            if not isinstance(p[1], c_ast.TypeDecl):
-                raise NotImplementedError(
-                        "cannot attach attributes to nodes of type '%s'"
-                        % type(p[1]))
-
-            p[1].attributes = p[2]
-
         p[0] = p[1]
 
     def p_type_specifier_gnu_typeof_expr(self, p):
@@ -217,43 +321,11 @@ class GnuCParser(CParserBase, _AttributesMixin, _AsmMixin):
         """
         p[0] = TypeOfDeclaration(p[3])
 
-    def p_statement_gnu(self, p):
-        """ statement   : asm
-        """
-        p[0] = p[1]
-
     def p_unary_operator_gnu(self, p):
         """ unary_operator  : __REAL__
                             | __IMAG__
         """
         p[0] = p[1]
-
-    # /!\ name must match C parser
-    def p_direct_declarator_5(self, p):
-        """ direct_declarator   : direct_declarator LPAREN parameter_type_list RPAREN asm_opt attributes_opt
-                                | direct_declarator LPAREN identifier_list_opt RPAREN asm_opt attributes_opt
-        """
-        func = FuncDeclExt(
-            args=p[3],
-            type=None,
-            attributes=p[6],
-            asm=p[5],
-            coord=p[1].coord)
-
-        p[0] = self._type_modify_decl(decl=p[1], modifier=func)
-
-    # /!\ name must match C parser
-    def p_direct_abstract_declarator_6(self, p):
-        """ direct_abstract_declarator  : direct_abstract_declarator LPAREN parameter_type_list_opt RPAREN asm_opt attributes_opt
-        """
-        func = FuncDeclExt(
-            args=p[3],
-            type=None,
-            attributes=p[6],
-            asm=p[5],
-            coord=p[1].coord)
-
-        p[0] = self._type_modify_decl(decl=p[1], modifier=func)
 
     def p_postfix_expression_gnu_tcp(self, p):
         """ postfix_expression  : __BUILTIN_TYPES_COMPATIBLE_P LPAREN parameter_declaration COMMA parameter_declaration RPAREN
@@ -261,13 +333,85 @@ class GnuCParser(CParserBase, _AttributesMixin, _AsmMixin):
         p[0] = c_ast.FuncCall(c_ast.ID(p[1], self._coord(p.lineno(1))),
                 TypeList([p[3], p[5]], self._coord(p.lineno(2))))
 
+    def p_attribute_const(self, p):
+        """ attribute : __CONST
+        """
+        p[0] = c_ast.ID(name="__const", coord=self._coord(p.lineno(1)))
+
 # }}}
 
 
 
 
 
-class OpenCLCParser(CParserBase, _AttributesMixin, _AsmMixin):
-    pass
+class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
+    from pycparserext.ext_c_lexer import GNUCLexer as lexer_class
+
+    INT_BIT_COUNTS = [8,16,32,64]
+    initial_type_symbols = (
+            set([
+                "%s%d" % (base_name, count)
+                for base_name in [
+                    'char', 'uchar', 'short', 'ushort', 'int', 'uint',
+                    'long', 'ulong', 'float', 'double']
+                for count in [2, 3, 4, 8, 16]
+                ])
+            | set([
+                "intptr_t", "uintptr_t",
+                "intmax_t", "uintmax_t",
+                "size_t", "ptrdiff_t"])
+            | set(["int%d_t" % bc for bc in INT_BIT_COUNTS])
+            | set(["uint%d_t" % bc for bc in INT_BIT_COUNTS])
+            | set(["int_least%d_t" % bc for bc in INT_BIT_COUNTS])
+            | set(["uint_least%d_t" % bc for bc in INT_BIT_COUNTS])
+            | set(["int_fast%d_t" % bc for bc in INT_BIT_COUNTS])
+            | set(["uint_fast%d_t" % bc for bc in INT_BIT_COUNTS])
+            | set([
+                "image1d_t", "image1d_array_t", "image1d_buffer_t",
+                "image2d_t", "image2d_array_t",
+                "image3d_t",
+                "sampler_t", "event_t"
+                ])
+            | set(["cfloat_t", "cdouble_t"]) # PyOpenCL extension
+            )
+
+    def p_pp_directive(self, p):
+        """ pp_directive  : PPHASH
+        """
+        p[0] = [PreprocessorLine(p[1], coord=self._coord(p.lineno(1)))]
+
+    def p_external_declaration_comment(self, p):
+        """ external_declaration    : LINECOMMENT
+        """
+        p[0] = None
+
+    def p_statement_comment(self, p):
+        """ statement    : LINECOMMENT
+        """
+        p[0] = None
+
+    def p_type_qualifier_cl(self, p):
+        """ type_qualifier  : __GLOBAL
+                            | GLOBAL
+                            | __LOCAL
+                            | LOCAL
+                            | __CONSTANT
+                            | CONSTANT
+                            | __PRIVATE
+                            | PRIVATE
+                            | __READ_ONLY
+                            | READ_ONLY
+                            | __WRITE_ONLY
+                            | WRITE_ONLY
+                            | __READ_WRITE
+                            | READ_WRITE
+        """
+        p[0] = p[1]
+
+    def p_function_specifier_cl(self, p):
+        """ function_specifier  : __KERNEL
+                                | KERNEL
+        """
+        p[0] = p[1]
 
 # vim: fdm=marker

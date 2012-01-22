@@ -120,7 +120,18 @@ class GNUCGenerator(AsmAndAttributesMixin, CGeneratorBase):
 
 
 
-class OpenCLCGenerator(CGeneratorBase, AsmAndAttributesMixin):
-    pass
+class OpenCLCGenerator(AsmAndAttributesMixin, CGeneratorBase):
+    def visit_FileAST(self, n):
+        s = ''
+        from pycparserext.ext_c_parser import PreprocessorLine
+        for ext in n.ext:
+            if isinstance(ext, (c_ast.FuncDef, PreprocessorLine)):
+                s += self.visit(ext)
+            else:
+                s += self.visit(ext) + ';\n'
+        return s
+
+    def visit_PreprocessorLine(self, n):
+        return n.contents
 
 # vim: fdm=marker
