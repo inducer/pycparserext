@@ -293,7 +293,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
     from pycparserext.ext_c_lexer import GNUCLexer as lexer_class
 
-    initial_type_symbols = ["__builtin_va_list"]
+    initial_type_symbols = set(["__builtin_va_list"])
 
     def p_function_specifier_gnu(self, p):
         """ function_specifier  : __INLINE

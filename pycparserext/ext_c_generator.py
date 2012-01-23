@@ -88,7 +88,12 @@ class AsmAndAttributesMixin(object):
                         nstr += ' __attribute__((' + self.visit(modifier.attributes) + '))'
 
                 elif isinstance(modifier, c_ast.PtrDecl):
-                    nstr = '*' + nstr
+                    # BUG FIX: pycparser ignores quals
+                    quals = ' '.join(modifier.quals)
+                    if quals:
+                        quals = quals + ' '
+                    nstr = '*' + quals + nstr
+
             if hasattr(n, "attributes") and n.attributes:
                 nstr += ' __attribute__((' + self.visit(n.attributes) + '))'
 
