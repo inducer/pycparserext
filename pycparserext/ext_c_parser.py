@@ -78,6 +78,15 @@ class TypeList(c_ast.Node):
 
     attr_names = ()
 
+class AttributeSpecifier(c_ast.Node):
+    def __init__(self, exprlist):
+        self.exprlist = exprlist
+
+    def children(self):
+        return [("exprlist", self.exprlist)]
+
+    attr_names = ()
+
 class Asm(c_ast.Node):
     def __init__(self, asm_keyword, template, output_operands, input_operands, clobbered_regs, coord=None):
         self.asm_keyword = asm_keyword
@@ -207,6 +216,11 @@ class _AttributesMixin(object):
         p[0] = p[1]
 
     # }}}
+
+    def p_function_specifier_attr(self, p):
+        """ function_specifier  : attribute_decl
+        """
+        p[0] = AttributeSpecifier(p[1])
 
 # }}}
 

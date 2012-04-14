@@ -110,10 +110,27 @@ class AsmAndAttributesMixin(object):
         else:
             return self.visit(n)
 
+    def _generate_decl(self, n):
+        """ Generation from a Decl node.
+        """
+        s = ''
+        def funcspec_to_str(i):
+            if isinstance(i, c_ast.Node):
+                return self.visit(i)
+            else:
+                return i
+
+        if n.funcspec: s = ' '.join(funcspec_to_str(i) for i in n.funcspec) + ' '
+        if n.storage: s += ' '.join(n.storage) + ' '
+        s += self._generate_type(n.type)
+        return s
+
+    def visit_AttributeSpecifier(self, n):
+        return ' __attribute__((' + self.visit(n.exprlist) + '))'
 
 
 
-class GNUCGenerator(AsmAndAttributesMixin, CGeneratorBase):
+class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
     def visit_TypeOfDeclaration(self, n):
         return "__typeof__(%s)" % self.visit(n.declaration)
 
@@ -122,6 +139,14 @@ class GNUCGenerator(AsmAndAttributesMixin, CGeneratorBase):
 
     def visit_TypeList(self, n):
         return ', '.join(self.visit(ch) for ch in n.types)
+
+
+
+class GNUCGenerator(GnuCGenerator):
+    def __init__(self):
+        from warnings import warn
+        warn("GNUCGenerator is now called GnuCGenerator",
+                DeprecationWarning, stacklevel=2)
 
 
 
