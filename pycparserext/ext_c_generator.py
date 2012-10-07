@@ -19,11 +19,8 @@ class CGeneratorBase(CGeneratorBaseBuggy):
             # a name.
             return 'sizeof(%s)' % self.visit(n.expr)
         else:
-            if n.op == "-":
-                # avoid merging of "- - x"
-                return '%s %s' % (n.op, operand)
-            else:
-                return '%s%s' % (n.op, operand)
+            # avoid merging of "- - x" or "__real__varname"
+            return '%s %s' % (n.op, operand)
 
 
 
