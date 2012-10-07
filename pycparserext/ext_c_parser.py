@@ -313,7 +313,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
 class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     # TODO: __extension__
 
-    from pycparserext.ext_c_lexer import GNUCLexer as lexer_class
+    from pycparserext.ext_c_lexer import GnuCLexer as lexer_class
 
     initial_type_symbols = set(["__builtin_va_list"])
 
@@ -367,7 +367,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
 
 class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
-    from pycparserext.ext_c_lexer import GNUCLexer as lexer_class
+    from pycparserext.ext_c_lexer import GnuCLexer as lexer_class
 
     INT_BIT_COUNTS = [8,16,32,64]
     initial_type_symbols = (
