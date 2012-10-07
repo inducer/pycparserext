@@ -61,7 +61,8 @@ class CParserBase(pycparser.c_parser.CParser):
         else:
             return self.cparser.parse(text, lexer=self.clex, debug=debuglevel)
 
-    def p_translation_unit_ext_2(self, p):
+    # /!\ overrides existing declaration, do not change name
+    def p_translation_unit_2(self, p):
         """ translation_unit    : translation_unit external_declaration
         """
         if p[1].ext is None:
