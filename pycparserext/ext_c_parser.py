@@ -34,9 +34,16 @@ class CParserBase(pycparser.c_parser.CParser):
         for rule in self.OPT_RULES:
             self._create_opt_rule(rule)
 
+        if hasattr(self, "p_translation_unit_or_empty"):
+            # v2.08 and later
+            self.ext_start_symbol = "translation_unit_or_empty"
+        else:
+            # v2.07 and earlier
+            self.ext_start_symbol = "translation_unit"
+
         self.cparser = ply.yacc.yacc(
             module=self,
-            start='translation_unit',
+            start=self.ext_start_symbol,
             debug=yacc_debug, write_tables=False)
 
     def parse(self, text, filename='', debuglevel=0,
@@ -54,7 +61,7 @@ class CParserBase(pycparser.c_parser.CParser):
         else:
             return self.cparser.parse(text, lexer=self.clex, debug=debuglevel)
 
-    def p_translation_unit_2(self, p):
+    def p_translation_unit_ext_2(self, p):
         """ translation_unit    : translation_unit external_declaration
         """
         if p[1].ext is None:
