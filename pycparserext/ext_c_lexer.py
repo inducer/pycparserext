@@ -27,6 +27,7 @@ class OpenCLCLexer(CLexerBase):
             #('comment', 'exclusive'),
             #('preproc', 'exclusive'),
             ('ppline', 'exclusive'), # unused
+            ('pppragma', 'exclusive'), # unused
             )
 
     def t_LINECOMMENT(self, t):
