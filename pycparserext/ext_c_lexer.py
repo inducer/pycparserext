@@ -58,7 +58,7 @@ add_lexer_keywords(GnuCLexer, [
     '__attribute__', '__asm__', '__asm', '__typeof__',
     '__real__', '__imag__', '__builtin_types_compatible_p',
     '__const', '__restrict', '__inline', '__inline__',
-    '__extension__'])
+    '__extension__', 'asm'])
 
 _CL_KEYWORDS = ['kernel', 'constant', 'global', 'local', 'private',
         "read_only", "write_only", "read_write"]
