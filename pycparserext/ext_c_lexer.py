@@ -12,6 +12,8 @@ class GnuCLexer(CLexerBase):
     def t_FLOAT_CONST(self, t):
         return t
 
+    t_pppragma_ignore = ' \t<>.-{}();+-*/$%@&^~!?:,0123456789='
+
 class GNUCLexer(GnuCLexer):
     def __init__(self, *args, **kwargs):
         from warnings import warn
