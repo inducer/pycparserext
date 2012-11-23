@@ -236,28 +236,44 @@ class _AsmMixin(object):
         p[0] = p[1]
 
     def p_asm_1(self, p):
-        """ asm : asm_keyword LPAREN argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], None, None, None, coord=self._coord(p.lineno(1)))
 
     def p_asm_2(self, p):
-        """ asm : asm_keyword LPAREN argument_expression_list COLON argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], None, None, coord=self._coord(p.lineno(1)))
 
     def p_asm_3(self, p):
-        """ asm : asm_keyword LPAREN argument_expression_list COLON argument_expression_list COLON argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON asm_argument_expression_list COLON asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], p[7], None, coord=self._coord(p.lineno(1)))
 
     def p_asm_4(self, p):
-        """ asm : asm_keyword LPAREN argument_expression_list COLON argument_expression_list COLON argument_expression_list COLON argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON asm_argument_expression_list COLON asm_argument_expression_list COLON asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], p[7], p[9], coord=self._coord(p.lineno(1)))
 
     def p_asm_keyword(self, p):
-        """ asm_keyword : __ASM__
-                        | __ASM
+        """ asm_keyword : __ASM__ asm_volatile
+                        | __ASM asm_volatile
+                        | ASM asm_volatile
+        """
+        p[0] = p[1]
+        if p[2]:
+            p[0] += ' ' + p[2]
+
+    
+    def p_asm_volatile(self, p):
+        """ asm_volatile : VOLATILE
+                         | empty
+        """
+        p[0] = p[1]
+        
+    def p_asm_argument_expression_list(self, p):
+        """asm_argument_expression_list : argument_expression_list
+                                        | empty
         """
         p[0] = p[1]
 

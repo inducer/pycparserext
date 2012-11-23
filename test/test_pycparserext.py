@@ -1,3 +1,45 @@
+def test_asm_volatile_1():
+    src = """
+    void read_tsc(void) {
+        long val;
+        asm("rdtsc" : "=A" (val));
+    }    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print GnuCGenerator().visit(ast)
+
+def test_asm_volatile_2():
+    src = """
+    void read_tsc(void) {
+        long val;
+        asm volatile("rdtsc" : "=A" (val));
+    }    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print GnuCGenerator().visit(ast)
+
+def test_asm_volatile_3():
+    src = """
+    void read_tsc(void) {
+        long fpenv;
+        asm("mtfsf 255,%0" :: "f" (fpenv));
+    }    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print GnuCGenerator().visit(ast)
+
 def test_funky_header_code():
     src = """
         extern __inline int __attribute__ ((__nothrow__)) __signbitf (float __x)
@@ -11,6 +53,7 @@ def test_funky_header_code():
     from pycparserext.ext_c_parser import GnuCParser
     p = GnuCParser()
     ast = p.parse(src)
+    ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator
     print GnuCGenerator().visit(ast)
