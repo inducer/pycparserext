@@ -1,4 +1,4 @@
-from pycparserext.c_generator import CGenerator as CGeneratorBaseBuggy
+from pycparser.c_generator import CGenerator as CGeneratorBaseBuggy
 from pycparserext.ext_c_parser import FuncDeclExt
 import pycparser.c_ast as c_ast
 
