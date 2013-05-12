@@ -65,7 +65,7 @@ add_lexer_keywords(GnuCLexer, [
 _CL_KEYWORDS = ['kernel', 'constant', 'global', 'local', 'private',
         "read_only", "write_only", "read_write"]
 add_lexer_keywords(OpenCLCLexer, [
-    '__attribute__', '__asm__', '__asm']
+    '__attribute__', '__asm__', '__asm', 'asm']
     + _CL_KEYWORDS + ["__"+kw for kw in _CL_KEYWORDS])
 
 # vim: fdm=marker

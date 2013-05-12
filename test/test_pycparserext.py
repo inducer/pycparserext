@@ -58,6 +58,23 @@ def test_funky_header_code():
     from pycparserext.ext_c_generator import GnuCGenerator
     print GnuCGenerator().visit(ast)
 
+def test_opencl():
+    from pycparserext.ext_c_parser import OpenCLCParser, c_ast
+    src = """
+            __kernel void zeroMatrix(__global float *A, int n,  __global float * B)
+    {
+        int i = get_global_id(0);
+         for (int k=0; k<n; k++)
+            A[i*n+k] = 0;
+    }
+            """
+
+    p = OpenCLCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import OpenCLCGenerator
+    print OpenCLCGenerator().visit(ast)
 
 
 

@@ -373,7 +373,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
 
 class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
-    from pycparserext.ext_c_lexer import GnuCLexer as lexer_class
+    from pycparserext.ext_c_lexer import OpenCLCLexer as lexer_class
 
     INT_BIT_COUNTS = [8,16,32,64]
     initial_type_symbols = (
