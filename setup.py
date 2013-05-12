@@ -13,7 +13,7 @@ except ImportError:
     from distutils.command.build_py import build_py
 
 setup(name="pycparserext",
-      version="2012.1",
+      version="2013.1",
       description="Extensions for pycparser",
       long_description="""
       Extended functionality for Eli Bendersky's 
