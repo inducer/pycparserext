@@ -15,14 +15,7 @@ except ImportError:
 setup(name="pycparserext",
       version="2013.1",
       description="Extensions for pycparser",
-      long_description="""
-      Extended functionality for Eli Bendersky's 
-      `pycparser <http://pypi.python.org/pypi/pycparser>`_,
-      in particular support for parsing GNU extensions and
-      OpenCL.
-
-      See also the `github code repository <http://github.com/inducer/pycparserext>`_.
-      """,
+      long_description=open("README.rst", "r").read(),
       classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
