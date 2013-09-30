@@ -5,7 +5,6 @@ import pycparser.c_ast as c_ast
 import ply.yacc
 
 
-
 class CParserBase(pycparser.c_parser.CParser):
     OPT_RULES = [
         'abstract_declarator',
@@ -61,6 +60,7 @@ class CParserBase(pycparser.c_parser.CParser):
         else:
             return self.cparser.parse(text, lexer=self.clex, debug=debuglevel)
 
+
 # {{{ ast extensions
 
 class TypeList(c_ast.Node):
@@ -76,6 +76,7 @@ class TypeList(c_ast.Node):
 
     attr_names = ()
 
+
 class AttributeSpecifier(c_ast.Node):
     def __init__(self, exprlist):
         self.exprlist = exprlist
@@ -85,8 +86,10 @@ class AttributeSpecifier(c_ast.Node):
 
     attr_names = ()
 
+
 class Asm(c_ast.Node):
-    def __init__(self, asm_keyword, template, output_operands, input_operands, clobbered_regs, coord=None):
+    def __init__(self, asm_keyword, template, output_operands,
+            input_operands, clobbered_regs, coord=None):
         self.asm_keyword = asm_keyword
         self.template = template
         self.output_operands = output_operands
@@ -96,13 +99,18 @@ class Asm(c_ast.Node):
 
     def children(self):
         nodelist = []
-        if self.template is not None: nodelist.append(("template", self.template))
-        if self.output_operands is not None: nodelist.append(("output_operands", self.output_operands))
-        if self.input_operands is not None: nodelist.append(("input_operands", self.input_operands))
-        if self.clobbered_regs is not None: nodelist.append(("clobbered_regs", self.clobbered_regs))
+        if self.template is not None:
+            nodelist.append(("template", self.template))
+        if self.output_operands is not None:
+            nodelist.append(("output_operands", self.output_operands))
+        if self.input_operands is not None:
+            nodelist.append(("input_operands", self.input_operands))
+        if self.clobbered_regs is not None:
+            nodelist.append(("clobbered_regs", self.clobbered_regs))
         return tuple(nodelist)
 
     attr_names = ('asm_keyword',)
+
 
 class PreprocessorLine(c_ast.Node):
     def __init__(self, contents, coord=None):
@@ -114,6 +122,7 @@ class PreprocessorLine(c_ast.Node):
 
     attr_names = ("contents")
 
+
 class TypeOfDeclaration(c_ast.Node):
     def __init__(self, declaration, coord=None):
         self.declaration = declaration
@@ -121,10 +130,12 @@ class TypeOfDeclaration(c_ast.Node):
 
     def children(self):
         nodelist = []
-        if self.declaration is not None: nodelist.append(("declaration", self.declaration))
+        if self.declaration is not None:
+            nodelist.append(("declaration", self.declaration))
         return tuple(nodelist)
 
     attr_names = ()
+
 
 class TypeOfExpression(c_ast.Node):
     def __init__(self, expr, coord=None):
@@ -133,10 +144,12 @@ class TypeOfExpression(c_ast.Node):
 
     def children(self):
         nodelist = []
-        if self.expr is not None: nodelist.append(("expr", self.expr))
+        if self.expr is not None:
+            nodelist.append(("expr", self.expr))
         return tuple(nodelist)
 
     attr_names = ()
+
 
 class FuncDeclExt(c_ast.Node):
     def __init__(self, args, type, attributes, asm, coord=None):
@@ -148,15 +161,20 @@ class FuncDeclExt(c_ast.Node):
 
     def children(self):
         nodelist = []
-        if self.args is not None: nodelist.append(("args", self.args))
-        if self.type is not None: nodelist.append(("type", self.type))
-        if self.attributes is not None: nodelist.append(("attributes", self.attributes))
-        if self.asm is not None: nodelist.append(("asm", self.asm))
+        if self.args is not None:
+            nodelist.append(("args", self.args))
+        if self.type is not None:
+            nodelist.append(("type", self.type))
+        if self.attributes is not None:
+            nodelist.append(("attributes", self.attributes))
+        if self.asm is not None:
+            nodelist.append(("asm", self.asm))
         return tuple(nodelist)
 
     attr_names = ()
 
 # }}}
+
 
 # {{{ attributes
 
@@ -222,6 +240,7 @@ class _AttributesMixin(object):
 
 # }}}
 
+
 # {{{ asm
 
 class _AsmMixin(object):
@@ -241,17 +260,22 @@ class _AsmMixin(object):
         p[0] = Asm(p[1], p[3], None, None, None, coord=self._coord(p.lineno(1)))
 
     def p_asm_2(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON asm_argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON \
+                asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], None, None, coord=self._coord(p.lineno(1)))
 
     def p_asm_3(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON asm_argument_expression_list COLON asm_argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON \
+                asm_argument_expression_list COLON asm_argument_expression_list \
+                RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], p[7], None, coord=self._coord(p.lineno(1)))
 
     def p_asm_4(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON asm_argument_expression_list COLON asm_argument_expression_list COLON asm_argument_expression_list RPAREN
+        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON \
+                asm_argument_expression_list COLON asm_argument_expression_list \
+                COLON asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], p[7], p[9], coord=self._coord(p.lineno(1)))
 
@@ -264,13 +288,12 @@ class _AsmMixin(object):
         if p[2]:
             p[0] += ' ' + p[2]
 
-    
     def p_asm_volatile(self, p):
         """ asm_volatile : VOLATILE
                          | empty
         """
         p[0] = p[1]
-        
+
     def p_asm_argument_expression_list(self, p):
         """asm_argument_expression_list : argument_expression_list
                                         | empty
@@ -287,8 +310,10 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     # {{{ /!\ names must match C parser to override
 
     def p_direct_declarator_5(self, p):
-        """ direct_declarator   : direct_declarator LPAREN parameter_type_list RPAREN asm_opt attributes_opt
-                                | direct_declarator LPAREN identifier_list_opt RPAREN asm_opt attributes_opt
+        """ direct_declarator   : direct_declarator LPAREN parameter_type_list \
+                                        RPAREN asm_opt attributes_opt
+                                | direct_declarator LPAREN identifier_list_opt \
+                                        RPAREN asm_opt attributes_opt
         """
         func = FuncDeclExt(
             args=p[3],
@@ -300,7 +325,8 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
         p[0] = self._type_modify_decl(decl=p[1], modifier=func)
 
     def p_direct_abstract_declarator_6(self, p):
-        """ direct_abstract_declarator  : direct_abstract_declarator LPAREN parameter_type_list_opt RPAREN asm_opt attributes_opt
+        """ direct_abstract_declarator  : direct_abstract_declarator \
+                LPAREN parameter_type_list_opt RPAREN asm_opt attributes_opt
         """
         func = FuncDeclExt(
             args=p[3],
@@ -314,12 +340,13 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     # }}}
 # }}}
 
+
 # {{{ gnu parser
 
 class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     # TODO: __extension__
 
-    from pycparserext.ext_c_lexer import GnuCLexer as lexer_class
+    from pycparserext.ext_c_lexer import GnuCLexer as lexer_class  # noqa
 
     initial_type_symbols = set(["__builtin_va_list"])
 
@@ -356,7 +383,8 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         p[0] = p[1]
 
     def p_postfix_expression_gnu_tcp(self, p):
-        """ postfix_expression  : __BUILTIN_TYPES_COMPATIBLE_P LPAREN parameter_declaration COMMA parameter_declaration RPAREN
+        """ postfix_expression  : __BUILTIN_TYPES_COMPATIBLE_P \
+                LPAREN parameter_declaration COMMA parameter_declaration RPAREN
         """
         p[0] = c_ast.FuncCall(c_ast.ID(p[1], self._coord(p.lineno(1))),
                 TypeList([p[3], p[5]], self._coord(p.lineno(2))))
@@ -369,13 +397,10 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 # }}}
 
 
-
-
-
 class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
-    from pycparserext.ext_c_lexer import OpenCLCLexer as lexer_class
+    from pycparserext.ext_c_lexer import OpenCLCLexer as lexer_class  # noqa
 
-    INT_BIT_COUNTS = [8,16,32,64]
+    INT_BIT_COUNTS = [8, 16, 32, 64]
     initial_type_symbols = (
             set([
                 "%s%d" % (base_name, count)
@@ -400,7 +425,7 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
                 "image3d_t",
                 "sampler_t", "event_t"
                 ])
-            | set(["cfloat_t", "cdouble_t"]) # PyOpenCL extension
+            | set(["cfloat_t", "cdouble_t"])  # PyOpenCL extension
             )
 
     def p_pp_directive(self, p):
