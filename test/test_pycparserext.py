@@ -12,6 +12,7 @@ def test_asm_volatile_1():
     from pycparserext.ext_c_generator import GnuCGenerator
     print GnuCGenerator().visit(ast)
 
+
 def test_asm_volatile_2():
     src = """
     void read_tsc(void) {
@@ -26,6 +27,7 @@ def test_asm_volatile_2():
     from pycparserext.ext_c_generator import GnuCGenerator
     print GnuCGenerator().visit(ast)
 
+
 def test_asm_volatile_3():
     src = """
     void read_tsc(void) {
@@ -39,6 +41,7 @@ def test_asm_volatile_3():
 
     from pycparserext.ext_c_generator import GnuCGenerator
     print GnuCGenerator().visit(ast)
+
 
 def test_funky_header_code():
     src = """
@@ -58,8 +61,9 @@ def test_funky_header_code():
     from pycparserext.ext_c_generator import GnuCGenerator
     print GnuCGenerator().visit(ast)
 
+
 def test_opencl():
-    from pycparserext.ext_c_parser import OpenCLCParser, c_ast
+    from pycparserext.ext_c_parser import OpenCLCParser
     src = """
             __kernel void zeroMatrix(__global float *A, int n,  __global float * B)
     {
@@ -75,8 +79,6 @@ def test_opencl():
 
     from pycparserext.ext_c_generator import OpenCLCGenerator
     print OpenCLCGenerator().visit(ast)
-
-
 
 
 if __name__ == "__main__":
