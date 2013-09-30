@@ -10,7 +10,7 @@ except ImportError:
     from distutils.command.build_py import build_py
 
 setup(name="pycparserext",
-      version="2013.1",
+      version="2013.2",
       description="Extensions for pycparser",
       long_description=open("README.rst", "r").read(),
       classifiers=[
@@ -26,7 +26,7 @@ setup(name="pycparserext",
 
       install_requires=[
           "ply>=3.4",
-          "pycparser>=2.09.1",
+          "pycparser>=2.10",
           ],
 
       author="Andreas Kloeckner",

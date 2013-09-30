@@ -24,8 +24,10 @@ class CParserBase(pycparser.c_parser.CParser):
 
     def __init__(self, yacc_debug=False):
         self.clex = self.lexer_class(
-            error_func=self._lex_error_func,
-            type_lookup_func=self._lex_type_lookup_func)
+                error_func=self._lex_error_func,
+                on_lbrace_func=self._lex_on_lbrace_func,
+                on_rbrace_func=self._lex_on_rbrace_func,
+                type_lookup_func=self._lex_type_lookup_func)
 
         self.clex.build()
         self.tokens = self.clex.tokens
@@ -52,8 +54,10 @@ class CParserBase(pycparser.c_parser.CParser):
 
         # _scope_stack[-1] is the current (topmost) scope.
 
-        self._scope_stack = [set(initial_type_symbols)
-                | getattr(self, "initial_type_symbols")]
+        initial_scope = dict((tpsym, 1) for tpsym in initial_type_symbols)
+        initial_scope.update(
+                dict((tpsym, 1) for tpsym in self.initial_type_symbols))
+        self._scope_stack = [initial_scope]
 
         if not text or text.isspace():
             return c_ast.FileAST([])
