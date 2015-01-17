@@ -410,14 +410,15 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
                 "%s%d" % (base_name, count)
                 for base_name in [
                     'char', 'uchar', 'short', 'ushort', 'int', 'uint',
-                    'long', 'ulong', 'float', 'double']
+                    'long', 'ulong', 'float', 'double', 'half']
                 for count in [2, 3, 4, 8, 16]
                 ])
             | set([
                 "intptr_t", "uintptr_t",
                 "intmax_t", "uintmax_t",
                 "size_t", "ptrdiff_t",
-                "uint", "ulong", "ushort", "uchar"])
+                "uint", "ulong", "ushort", "uchar",
+                "half", "bool"])
             | set(["int%d_t" % bc for bc in INT_BIT_COUNTS])
             | set(["uint%d_t" % bc for bc in INT_BIT_COUNTS])
             | set(["int_least%d_t" % bc for bc in INT_BIT_COUNTS])
