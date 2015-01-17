@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_asm_volatile_1():
     src = """
     void read_tsc(void) {
@@ -62,16 +65,17 @@ def test_funky_header_code():
     print GnuCGenerator().visit(ast)
 
 
-def test_opencl():
+@pytest.mark.parametrize("typename", ["int", "uint"])
+def test_opencl(typename):
     from pycparserext.ext_c_parser import OpenCLCParser
     src = """
             __kernel void zeroMatrix(__global float *A, int n,  __global float * B)
-    {
-        int i = get_global_id(0);
-         for (int k=0; k<n; k++)
-            A[i*n+k] = 0;
-    }
-            """
+            {
+                %s i = get_global_id(0);
+                for (int k=0; k<n; k++)
+                    A[i*n+k] = 0;
+            }
+            """ % typename
 
     p = OpenCLCParser()
     ast = p.parse(src)

@@ -416,7 +416,8 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
             | set([
                 "intptr_t", "uintptr_t",
                 "intmax_t", "uintmax_t",
-                "size_t", "ptrdiff_t"])
+                "size_t", "ptrdiff_t",
+                "uint", "ulong", "ushort", "uchar"])
             | set(["int%d_t" % bc for bc in INT_BIT_COUNTS])
             | set(["uint%d_t" % bc for bc in INT_BIT_COUNTS])
             | set(["int_least%d_t" % bc for bc in INT_BIT_COUNTS])
