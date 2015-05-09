@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pytest
 
 
@@ -13,7 +14,7 @@ def test_asm_volatile_1():
     ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator
-    print GnuCGenerator().visit(ast)
+    print(GnuCGenerator().visit(ast))
 
 
 def test_asm_volatile_2():
@@ -28,7 +29,7 @@ def test_asm_volatile_2():
     ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator
-    print GnuCGenerator().visit(ast)
+    print(GnuCGenerator().visit(ast))
 
 
 def test_asm_volatile_3():
@@ -43,7 +44,7 @@ def test_asm_volatile_3():
     ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator
-    print GnuCGenerator().visit(ast)
+    print(GnuCGenerator().visit(ast))
 
 
 def test_funky_header_code():
@@ -62,7 +63,7 @@ def test_funky_header_code():
     ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator
-    print GnuCGenerator().visit(ast)
+    print(GnuCGenerator().visit(ast))
 
 
 @pytest.mark.parametrize("typename", ["int", "uint"])
@@ -82,7 +83,7 @@ def test_opencl(typename):
     ast.show()
 
     from pycparserext.ext_c_generator import OpenCLCGenerator
-    print OpenCLCGenerator().visit(ast)
+    print(OpenCLCGenerator().visit(ast))
 
 
 if __name__ == "__main__":
