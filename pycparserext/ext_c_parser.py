@@ -2,7 +2,7 @@ from __future__ import division
 
 import pycparser.c_parser
 import pycparser.c_ast as c_ast
-import ply.yacc
+import pycparser.ply.yacc as yacc
 
 
 class CParserBase(pycparser.c_parser.CParser):
@@ -42,7 +42,7 @@ class CParserBase(pycparser.c_parser.CParser):
             # v2.07 and earlier
             self.ext_start_symbol = "translation_unit"
 
-        self.cparser = ply.yacc.yacc(
+        self.cparser = yacc.yacc(
             module=self,
             start=self.ext_start_symbol,
             debug=yacc_debug, write_tables=False)

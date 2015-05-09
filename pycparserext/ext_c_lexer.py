@@ -1,7 +1,5 @@
 from pycparser.c_lexer import CLexer as CLexerBase
-from ply.lex import TOKEN
-
-
+from pycparser.ply.lex import TOKEN
 
 
 class GnuCLexer(CLexerBase):
@@ -13,6 +11,7 @@ class GnuCLexer(CLexerBase):
         return t
 
     t_pppragma_ignore = ' \t<>.-{}();+-*/$%@&^~!?:,0123456789='
+
 
 class GNUCLexer(GnuCLexer):
     def __init__(self, *args, **kwargs):
