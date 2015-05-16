@@ -85,6 +85,18 @@ def test_opencl(typename):
     from pycparserext.ext_c_generator import OpenCLCGenerator
     print(OpenCLCGenerator().visit(ast))
 
+def test_array_attributes():
+    src = """
+        int x[10] __attribute__((unused));
+        """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
 
 if __name__ == "__main__":
     import sys

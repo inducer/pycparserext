@@ -226,12 +226,14 @@ class _AttributesMixin(object):
         """ declarator  : direct_declarator attributes_opt
         """
         if p[2].exprs:
-            if not isinstance(p[1], c_ast.TypeDecl):
+            if isinstance(p[1], c_ast.ArrayDecl):
+                p[1].type.attributes = p[2]
+            elif not isinstance(p[1], c_ast.TypeDecl):
                 raise NotImplementedError(
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
-
-            p[1].attributes = p[2]
+            else:
+                p[1].attributes = p[2]
 
         p[0] = p[1]
 
