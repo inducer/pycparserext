@@ -124,7 +124,7 @@ class PreprocessorLine(c_ast.Node):
     def children(self):
         return ()
 
-    attr_names = ("contents")
+    attr_names = ("contents",)
 
 
 class TypeOfDeclaration(c_ast.Node):
@@ -196,6 +196,7 @@ class _AttributesMixin(object):
 
     def p_attribute_decl(self, p):
         """ attribute_decl : __ATTRIBUTE__ LPAREN LPAREN attribute_list RPAREN RPAREN
+                           | __ATTRIBUTE LPAREN LPAREN attribute_list RPAREN RPAREN
         """
         p[0] = p[4]
 
@@ -226,12 +227,14 @@ class _AttributesMixin(object):
         """ declarator  : direct_declarator attributes_opt
         """
         if p[2].exprs:
-            if not isinstance(p[1], c_ast.TypeDecl):
+            if isinstance(p[1], c_ast.ArrayDecl):
+                p[1].type.attributes = p[2]
+            elif not isinstance(p[1], c_ast.TypeDecl):
                 raise NotImplementedError(
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
-
-            p[1].attributes = p[2]
+            else:
+                p[1].attributes = p[2]
 
         p[0] = p[1]
 
