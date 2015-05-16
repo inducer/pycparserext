@@ -124,7 +124,7 @@ class PreprocessorLine(c_ast.Node):
     def children(self):
         return ()
 
-    attr_names = ("contents")
+    attr_names = ("contents",)
 
 
 class TypeOfDeclaration(c_ast.Node):
