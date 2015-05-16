@@ -88,6 +88,7 @@ def test_opencl(typename):
 def test_array_attributes():
     src = """
         int x[10] __attribute__((unused));
+        int y[20] __attribute((aligned(10)));
         """
 
     from pycparserext.ext_c_parser import GnuCParser

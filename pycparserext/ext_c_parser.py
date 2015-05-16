@@ -196,6 +196,7 @@ class _AttributesMixin(object):
 
     def p_attribute_decl(self, p):
         """ attribute_decl : __ATTRIBUTE__ LPAREN LPAREN attribute_list RPAREN RPAREN
+                           | __ATTRIBUTE LPAREN LPAREN attribute_list RPAREN RPAREN
         """
         p[0] = p[4]
 
