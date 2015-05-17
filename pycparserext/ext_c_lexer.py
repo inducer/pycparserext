@@ -4,7 +4,11 @@ from pycparser.ply.lex import TOKEN
 
 class GnuCLexer(CLexerBase):
     # support '3i' for imaginary literal
-    floating_constant = '(((('+CLexerBase.fractional_constant+')'+CLexerBase.exponent_part+'?)|([0-9]+'+CLexerBase.exponent_part+'))i?[FfLl]?)'
+    floating_constant = (
+            '(((('
+            + CLexerBase.fractional_constant+')'
+            + CLexerBase.exponent_part+'?)|([0-9]+'
+            + CLexerBase.exponent_part+'))i?[FfLl]?)')
 
     @TOKEN(floating_constant)
     def t_FLOAT_CONST(self, t):
@@ -25,10 +29,10 @@ class GNUCLexer(GnuCLexer):
 class OpenCLCLexer(CLexerBase):
     tokens = CLexerBase.tokens + ('LINECOMMENT',)
     states = (
-            #('comment', 'exclusive'),
-            #('preproc', 'exclusive'),
-            ('ppline', 'exclusive'), # unused
-            ('pppragma', 'exclusive'), # unused
+            # ('comment', 'exclusive'),
+            # ('preproc', 'exclusive'),
+            ('ppline', 'exclusive'),  # unused
+            ('pppragma', 'exclusive'),  # unused
             )
 
     def t_LINECOMMENT(self, t):
@@ -40,8 +44,6 @@ class OpenCLCLexer(CLexerBase):
         r'[ \t]*\#([^\n]|\\\n)+[^\n\\]\n'
         t.lexer.lineno += t.value.count("\n")
         return t
-
-
 
 
 def add_lexer_keywords(cls, keywords):
