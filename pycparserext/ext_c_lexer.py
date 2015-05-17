@@ -1,5 +1,8 @@
 from pycparser.c_lexer import CLexer as CLexerBase
-from pycparser.ply.lex import TOKEN
+try:
+    from pycparser.ply.lex import TOKEN
+except ImportError:
+    from ply.lex import TOKEN
 
 
 class GnuCLexer(CLexerBase):

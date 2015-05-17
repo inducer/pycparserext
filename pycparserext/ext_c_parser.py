@@ -2,7 +2,10 @@ from __future__ import division
 
 import pycparser.c_parser
 import pycparser.c_ast as c_ast
-import pycparser.ply.yacc as yacc
+try:
+    import pycparser.ply.yacc as yacc
+except ImportError:
+    import ply.yacc as yacc
 
 
 class CParserBase(pycparser.c_parser.CParser):
