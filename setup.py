@@ -26,7 +26,7 @@ setup(name="pycparserext",
 
       install_requires=[
           "ply>=3.4",
-          "pycparser>=2.10",
+          "pycparser>=2.14",
           ],
 
       author="Andreas Kloeckner",

@@ -18,6 +18,7 @@ class CParserBase(pycparser.c_parser.CParser):
         'expression',
         'identifier_list',
         'init_declarator_list',
+        'initializer_list',
         'parameter_type_list',
         'specifier_qualifier_list',
         'block_item_list',
@@ -38,12 +39,7 @@ class CParserBase(pycparser.c_parser.CParser):
         for rule in self.OPT_RULES:
             self._create_opt_rule(rule)
 
-        if hasattr(self, "p_translation_unit_or_empty"):
-            # v2.08 and later
-            self.ext_start_symbol = "translation_unit_or_empty"
-        else:
-            # v2.07 and earlier
-            self.ext_start_symbol = "translation_unit"
+        self.ext_start_symbol = "translation_unit_or_empty"
 
         self.cparser = yacc.yacc(
             module=self,
@@ -158,6 +154,15 @@ class TypeOfExpression(c_ast.Node):
     attr_names = ()
 
 
+# This is the same as pycparser's, but it does *not* declare __slots__--
+# so we can poke in attributes at our leisure.
+class TypeDeclExt(c_ast.TypeDecl):
+    @staticmethod
+    def from_pycparser(td):
+        assert isinstance(td, c_ast.TypeDecl)
+        return TypeDeclExt(td.declname, td.quals, td.type, td.coord)
+
+
 class FuncDeclExt(c_ast.Node):
     def __init__(self, args, type, attributes, asm, coord=None):
         self.args = args
@@ -231,12 +236,14 @@ class _AttributesMixin(object):
         """
         if p[2].exprs:
             if isinstance(p[1], c_ast.ArrayDecl):
+                p[1].type = TypeDeclExt.from_pycparser(p[1].type)
                 p[1].type.attributes = p[2]
             elif not isinstance(p[1], c_ast.TypeDecl):
                 raise NotImplementedError(
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
             else:
+                p[1] = TypeDeclExt.from_pycparser(p[1])
                 p[1].attributes = p[2]
 
         p[0] = p[1]
