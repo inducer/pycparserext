@@ -1,9 +1,6 @@
 from pycparser.c_generator import CGenerator as CGeneratorBaseBuggy
-from pycparserext.ext_c_parser import FuncDeclExt
+from pycparserext.ext_c_parser import FuncDeclExt, TypeDeclExt
 import pycparser.c_ast as c_ast
-
-
-
 
 
 class CGeneratorBase(CGeneratorBaseBuggy):
@@ -21,9 +18,6 @@ class CGeneratorBase(CGeneratorBaseBuggy):
         else:
             # avoid merging of "- - x" or "__real__varname"
             return '%s %s' % (n.op, operand)
-
-
-
 
 
 class AsmAndAttributesMixin(object):
@@ -54,9 +48,10 @@ class AsmAndAttributesMixin(object):
         typ = type(n)
         #~ print(n, modifiers)
 
-        if typ == c_ast.TypeDecl:
+        if typ in (c_ast.TypeDecl, TypeDeclExt):
             s = ''
-            if n.quals: s += ' '.join(n.quals) + ' '
+            if n.quals:
+                s += ' '.join(n.quals) + ' '
             s += self.visit(n.type)
 
             nstr = n.declname if n.declname else ''
@@ -82,7 +77,10 @@ class AsmAndAttributesMixin(object):
                         nstr += " " + self.visit(modifier.asm)
 
                     if modifier.attributes.exprs:
-                        nstr += ' __attribute__((' + self.visit(modifier.attributes) + '))'
+                        nstr += (
+                                ' __attribute__(('
+                                + self.visit(modifier.attributes)
+                                + '))')
 
                 elif isinstance(modifier, c_ast.PtrDecl):
                     # BUG FIX: pycparser ignores quals
@@ -94,7 +92,8 @@ class AsmAndAttributesMixin(object):
             if hasattr(n, "attributes") and n.attributes:
                 nstr += ' __attribute__((' + self.visit(n.attributes) + '))'
 
-            if nstr: s += ' ' + nstr
+            if nstr:
+                s += ' ' + nstr
             return s
         elif typ == c_ast.Decl:
             return self._generate_decl(n.type)
@@ -111,20 +110,22 @@ class AsmAndAttributesMixin(object):
         """ Generation from a Decl node.
         """
         s = ''
+
         def funcspec_to_str(i):
             if isinstance(i, c_ast.Node):
                 return self.visit(i)
             else:
                 return i
 
-        if n.funcspec: s = ' '.join(funcspec_to_str(i) for i in n.funcspec) + ' '
-        if n.storage: s += ' '.join(n.storage) + ' '
+        if n.funcspec:
+            s = ' '.join(funcspec_to_str(i) for i in n.funcspec) + ' '
+        if n.storage:
+            s += ' '.join(n.storage) + ' '
         s += self._generate_type(n.type)
         return s
 
     def visit_AttributeSpecifier(self, n):
         return ' __attribute__((' + self.visit(n.exprlist) + '))'
-
 
 
 class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
@@ -138,13 +139,11 @@ class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
         return ', '.join(self.visit(ch) for ch in n.types)
 
 
-
 class GNUCGenerator(GnuCGenerator):
     def __init__(self):
         from warnings import warn
         warn("GNUCGenerator is now called GnuCGenerator",
                 DeprecationWarning, stacklevel=2)
-
 
 
 class OpenCLCGenerator(AsmAndAttributesMixin, CGeneratorBase):
