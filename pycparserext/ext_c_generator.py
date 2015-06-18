@@ -1,9 +1,6 @@
 from pycparser.c_generator import CGenerator as CGeneratorBaseBuggy
-from pycparserext.ext_c_parser import FuncDeclExt
+from pycparserext.ext_c_parser import FuncDeclExt, TypeDeclExt
 import pycparser.c_ast as c_ast
-
-
-
 
 
 class CGeneratorBase(CGeneratorBaseBuggy):
@@ -54,7 +51,7 @@ class AsmAndAttributesMixin(object):
         typ = type(n)
         #~ print(n, modifiers)
 
-        if typ == c_ast.TypeDecl:
+        if typ in (c_ast.TypeDecl, TypeDeclExt):
             s = ''
             if n.quals: s += ' '.join(n.quals) + ' '
             s += self.visit(n.type)
