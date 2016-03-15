@@ -3,12 +3,6 @@
 
 from setuptools import setup
 
-try:
-    from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:
-    # 2.x
-    from distutils.command.build_py import build_py
-
 setup(name="pycparserext",
       version="2015.1",
       description="Extensions for pycparser",
@@ -33,7 +27,4 @@ setup(name="pycparserext",
       url="http://pypi.python.org/pypi/pycparserext",
       author_email="inform@tiker.net",
       license="MIT",
-      packages=["pycparserext"],
-
-      # 2to3 invocation
-      cmdclass={'build_py': build_py})
+      packages=["pycparserext"])
