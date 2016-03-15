@@ -238,6 +238,9 @@ class _AttributesMixin(object):
             if isinstance(p[1], c_ast.ArrayDecl):
                 p[1].type = TypeDeclExt.from_pycparser(p[1].type)
                 p[1].type.attributes = p[2]
+            elif isinstance(p[1], c_ast.FuncDecl):
+                p[1].type = TypeDeclExt.from_pycparser(p[1].type)
+                p[1].type.attributes = p[2]
             elif not isinstance(p[1], c_ast.TypeDecl):
                 raise NotImplementedError(
                         "cannot attach attributes to nodes of type '%s'"
