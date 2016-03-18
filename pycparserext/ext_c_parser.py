@@ -439,6 +439,26 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         p[0] = c_ast.FuncCall(c_ast.ID(p[1], self._coord(p.lineno(1))),
                 TypeList([p[3], p[5]], self._coord(p.lineno(2))))
 
+    def p_gnu_statement_expression(self, p):
+        """ gnu_statement_expression : LPAREN compound_statement RPAREN
+        """
+        p[0] = p[2]
+
+    def p_gnu_primary_expression_6(self, p):
+        """ primary_expression : gnu_statement_expression """
+        p[0] = p[1]
+
+    def p_statement(self, p):
+        """ statement   : labeled_statement
+                        | expression_statement
+                        | compound_statement
+                        | selection_statement
+                        | iteration_statement
+                        | jump_statement
+                        | gnu_statement_expression
+        """
+        p[0] = p[1]
+
     def p_attribute_const(self, p):
         """ attribute : __CONST
         """
