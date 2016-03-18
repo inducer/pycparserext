@@ -117,6 +117,30 @@ def test_func_decl_attribute():
     from pycparserext.ext_c_generator import GnuCGenerator
     print(GnuCGenerator().visit(ast))
 
+def test_func_ret_ptr_decl_attribute():
+    src = """
+    extern void* memcpy(const void* src, const void *dst, int len) __attribute__((unused));
+    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+def test_array_ptr_decl_attribute():
+    src = """
+    int* __attribute__((weak)) array[256];
+    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:

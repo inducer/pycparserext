@@ -252,6 +252,36 @@ class _AttributesMixin(object):
         p[0] = p[1]
 
     # }}}
+    def p_declarator_2(self, p):
+        """declarator  : pointer direct_declarator attributes_opt
+                       | pointer attributes_opt direct_declarator
+        """
+        if hasattr(p[3], "exprs"):
+            attr_decl = p[3]
+            decl = p[2]
+        elif hasattr(p[2], "exprs"):
+            attr_decl = p[2]
+            decl = p[3]
+        else:
+            attr_decl = None
+            decl = p[2]
+
+        if attr_decl:
+            if isinstance(decl, c_ast.ArrayDecl):
+                decl.type = TypeDeclExt.from_pycparser(decl.type)
+                decl.type.attributes = attr_decl
+            elif isinstance(decl, c_ast.FuncDecl):
+                decl.type = TypeDeclExt.from_pycparser(decl.type)
+                decl.type.attributes = attr_decl
+            elif not isinstance(p[2], c_ast.TypeDecl):
+                raise NotImplementedError(
+                        "cannot attach attributes to nodes of type '%s'"
+                        % type(p[1]))
+            else:
+                p[1] = TypeDeclExt.from_pycparser(p[2])
+                p[1].attributes = p[3]
+
+        p[0] = self._type_modify_decl(decl, p[1])
 
     def p_function_specifier_attr(self, p):
         """ function_specifier  : attribute_decl
