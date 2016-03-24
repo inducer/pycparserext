@@ -355,6 +355,11 @@ class _AsmMixin(object):
         """
         p[0] = p[1]
 
+    def p_asm_with_semi(self, p):
+        """ asm : asm SEMI
+        """
+        p[0] = p[1]
+
 
 class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     # {{{ /!\ names must match C parser to override

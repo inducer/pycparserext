@@ -65,6 +65,67 @@ def test_funky_header_code():
     from pycparserext.ext_c_generator import GnuCGenerator
     print(GnuCGenerator().visit(ast))
 
+def test_funky_header_code_2():
+    src = """
+        extern __inline int __attribute__ ((__nothrow__)) __signbitf (float __x)
+         {
+           int __m;
+           if (__x == 0)
+              __asm ("pmovmskb %1, %0" : "=r" (__m) : "x" (__x));
+           else
+              __asm ("pmovmskb %1, %0" : "=r" (__m) : "x" (__x));
+           return __m & 0x8;
+         }
+        """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+def test_funky_header_code_3():
+    src = """
+        extern __inline int __attribute__ ((__nothrow__)) __signbitf (float __x)
+         {
+           int __m;
+           if (__x == 0)
+              __asm ("pmovmskb %1, %0" : "=r" (__m) : "x" (__x));
+           return __m & 0x8;
+         }
+        """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+def test_funky_header_code_4():
+    src = """
+        extern __inline int __attribute__ ((__nothrow__)) __signbitf (float __x)
+         {
+           int __m;
+           if (__x == 0) {
+              __asm ("pmovmskb %1, %0" : "=r" (__m) : "x" (__x));
+           } else {
+              __asm ("pmovmskb %1, %0" : "=r" (__m) : "x" (__x));
+           }
+           return __m & 0x8;
+         }
+        """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
 
 @pytest.mark.parametrize("typename", ["int", "uint"])
 def test_opencl(typename):
