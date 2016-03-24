@@ -470,6 +470,10 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         """
         p[0] = c_ast.ID(name="__const", coord=self._coord(p.lineno(1)))
 
+    def p_struct_declaration_list_1(self, p):
+        """ struct_declaration_list : empty """
+        p[0] = None
+
 # }}}
 
 

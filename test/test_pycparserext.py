@@ -280,6 +280,20 @@ def test_lvalue_gnu_statement_expression():
     from pycparserext.ext_c_generator import GnuCGenerator
     print(GnuCGenerator().visit(ast))
 
+def test_empty_struct_declaration():
+    src = """
+        typedef struct Foo {
+        } Foo_t;
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
