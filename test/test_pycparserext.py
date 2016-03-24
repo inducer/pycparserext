@@ -127,6 +127,17 @@ def test_funky_header_code_4():
     from pycparserext.ext_c_generator import GnuCGenerator
     print(GnuCGenerator().visit(ast))
 
+def test_funky_header_code_5():
+    src=""" void  do_foo(void) __asm(__STRING(do_foo));"""
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
 @pytest.mark.parametrize("typename", ["int", "uint"])
 def test_opencl(typename):
     from pycparserext.ext_c_parser import OpenCLCParser
@@ -210,6 +221,9 @@ def test_func_ret_ptr_decl_attribute():
     p = GnuCParser()
     ast = p.parse(src)
     ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
 
 def test_array_ptr_decl_attribute():
     src = """

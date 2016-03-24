@@ -300,30 +300,30 @@ class _AsmMixin(object):
         p[0] = None
 
     def p_asm_opt_2(self, p):
-        """ asm_opt : asm
+        """ asm_opt : asm_no_semi
         """
         p[0] = p[1]
 
     def p_asm_1(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list RPAREN
+        """ asm_no_semi : asm_keyword LPAREN asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], None, None, None, coord=self._coord(p.lineno(1)))
 
     def p_asm_2(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON \
+        """ asm_no_semi : asm_keyword LPAREN asm_argument_expression_list COLON \
                 asm_argument_expression_list RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], None, None, coord=self._coord(p.lineno(1)))
 
     def p_asm_3(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON \
+        """ asm_no_semi : asm_keyword LPAREN asm_argument_expression_list COLON \
                 asm_argument_expression_list COLON asm_argument_expression_list \
                 RPAREN
         """
         p[0] = Asm(p[1], p[3], p[5], p[7], None, coord=self._coord(p.lineno(1)))
 
     def p_asm_4(self, p):
-        """ asm : asm_keyword LPAREN asm_argument_expression_list COLON \
+        """ asm_no_semi : asm_keyword LPAREN asm_argument_expression_list COLON \
                 asm_argument_expression_list COLON asm_argument_expression_list \
                 COLON asm_argument_expression_list RPAREN
         """
@@ -351,14 +351,15 @@ class _AsmMixin(object):
         p[0] = p[1]
 
     def p_statement_gnu(self, p):
-        """ statement   : asm
+        """ statement   : asm_no_semi
+                        | asm_no_semi SEMI
         """
         p[0] = p[1]
 
-    def p_asm_with_semi(self, p):
-        """ asm : asm SEMI
-        """
-        p[0] = p[1]
+#    def p_asm_with_semi(self, p):
+#        """ asm : asm SEMI
+#        """
+#        p[0] = p[1]
 
 
 class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
