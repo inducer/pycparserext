@@ -154,13 +154,29 @@ class TypeOfExpression(c_ast.Node):
     attr_names = ()
 
 
-# This is the same as pycparser's, but it does *not* declare __slots__--
+# These are the same as pycparser's, but it does *not* declare __slots__--
 # so we can poke in attributes at our leisure.
 class TypeDeclExt(c_ast.TypeDecl):
     @staticmethod
     def from_pycparser(td):
         assert isinstance(td, c_ast.TypeDecl)
         return TypeDeclExt(td.declname, td.quals, td.type, td.coord)
+
+
+class ArrayDeclExt(c_ast.TypeDecl):
+    @staticmethod
+    def from_pycparser(ad):
+        assert isinstance(ad, c_ast.ArrayDecl)
+        return ArrayDeclExt(ad.type, ad.dim, ad.dim_quals, ad.coord)
+
+
+def to_decl_ext(d):
+    if isinstance(d, c_ast.TypeDecl):
+        return TypeDeclExt.from_pycparser(d)
+    elif isinstance(d, c_ast.ArrayDecl):
+        return ArrayDeclExt.from_pycparser(d)
+    else:
+        raise TypeError("unexpected decl type: %s" % type(d).__name__)
 
 
 class FuncDeclExt(c_ast.Node):
@@ -236,17 +252,17 @@ class _AttributesMixin(object):
         """
         if p[2].exprs:
             if isinstance(p[1], c_ast.ArrayDecl):
-                p[1].type = TypeDeclExt.from_pycparser(p[1].type)
+                p[1].type = to_decl_ext(p[1].type)
                 p[1].type.attributes = p[2]
             elif isinstance(p[1], c_ast.FuncDecl):
-                p[1].type = TypeDeclExt.from_pycparser(p[1].type)
+                p[1].type = to_decl_ext(p[1].type)
                 p[1].type.attributes = p[2]
             elif not isinstance(p[1], c_ast.TypeDecl):
                 raise NotImplementedError(
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
             else:
-                p[1] = TypeDeclExt.from_pycparser(p[1])
+                p[1] = to_decl_ext(p[1])
                 p[1].attributes = p[2]
 
         p[0] = p[1]
@@ -268,17 +284,17 @@ class _AttributesMixin(object):
 
         if attr_decl:
             if isinstance(decl, c_ast.ArrayDecl):
-                decl.type = TypeDeclExt.from_pycparser(decl.type)
+                decl.type = to_decl_ext(decl.type)
                 decl.type.attributes = attr_decl
             elif isinstance(decl, c_ast.FuncDecl):
-                decl.type = TypeDeclExt.from_pycparser(decl.type)
+                decl.type = to_decl_ext(decl.type)
                 decl.type.attributes = attr_decl
             elif not isinstance(p[2], c_ast.TypeDecl):
                 raise NotImplementedError(
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
             else:
-                p[1] = TypeDeclExt.from_pycparser(p[2])
+                p[1] = to_decl_ext(p[2])
                 p[1].attributes = p[3]
 
         p[0] = self._type_modify_decl(decl, p[1])
