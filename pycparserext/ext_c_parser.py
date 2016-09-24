@@ -294,8 +294,9 @@ class _AttributesMixin(object):
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
             else:
-                p[1] = to_decl_ext(p[2])
-                p[1].attributes = p[3]
+                decl = to_decl_ext(decl)
+                if attr_decl.exprs:
+                    decl.attributes = attr_decl
 
         p[0] = self._type_modify_decl(decl, p[1])
 

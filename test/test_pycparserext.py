@@ -298,6 +298,26 @@ def test_nesty_c_declarator():
     ast.show()
 
 
+def test_pointer_reproduction():
+    src = """
+    struct foo {
+        const char                      *bar;
+        const char                      *baz;
+    };
+
+    int main () {
+        return 0;
+    }
+    """
+    import pycparserext.ext_c_parser as ext_c_parser
+    import pycparserext.ext_c_generator as ext_c_generator
+
+    parser = ext_c_parser.GnuCParser()
+    ast = parser.parse(src)
+    gen = ext_c_generator.GnuCGenerator()
+    print(gen.visit(ast))
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
