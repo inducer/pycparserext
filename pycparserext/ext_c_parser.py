@@ -282,6 +282,9 @@ class _AttributesMixin(object):
             attr_decl = None
             decl = p[2]
 
+        if not attr_decl.exprs:
+            attr_decl = None
+
         if attr_decl:
             if isinstance(decl, c_ast.ArrayDecl):
                 decl.type = to_decl_ext(decl.type)
@@ -295,8 +298,7 @@ class _AttributesMixin(object):
                         % type(p[1]))
             else:
                 decl = to_decl_ext(decl)
-                if attr_decl.exprs:
-                    decl.attributes = attr_decl
+                decl.attributes = attr_decl
 
         p[0] = self._type_modify_decl(decl, p[1])
 
