@@ -298,6 +298,23 @@ def test_nesty_c_declarator():
     ast.show()
 
 
+def test_const_ptr_func_arg():
+    src = """
+    const int *bar;
+    void foo(const int *bar, int * const baz);
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    src_str = GnuCGenerator().visit(ast)
+
+    assert src_str.count("*") == 3
+    print(src_str)
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
