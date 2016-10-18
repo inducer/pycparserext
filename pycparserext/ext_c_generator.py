@@ -89,7 +89,7 @@ class AsmAndAttributesMixin(object):
                         quals = quals + ' '
                     nstr = '*' + quals + nstr
 
-            if hasattr(n, "attributes") and n.attributes:
+            if hasattr(n, "attributes") and n.attributes.exprs:
                 nstr += ' __attribute__((' + self.visit(n.attributes) + '))'
 
             if nstr:
