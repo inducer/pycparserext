@@ -282,6 +282,9 @@ class _AttributesMixin(object):
             attr_decl = None
             decl = p[2]
 
+        if not attr_decl.exprs:
+            attr_decl = None
+
         if attr_decl:
             if isinstance(decl, c_ast.ArrayDecl):
                 decl.type = to_decl_ext(decl.type)
@@ -294,8 +297,8 @@ class _AttributesMixin(object):
                         "cannot attach attributes to nodes of type '%s'"
                         % type(p[1]))
             else:
-                p[2] = to_decl_ext(p[2])
-                p[2].attributes = p[3]
+                decl = to_decl_ext(decl)
+                decl.attributes = attr_decl
 
         p[0] = self._type_modify_decl(decl, p[1])
 
