@@ -359,6 +359,7 @@ class _AsmMixin(object):
 
     def p_asm_volatile(self, p):
         """ asm_volatile : VOLATILE
+                         | __VOLATILE__
                          | empty
         """
         p[0] = p[1]
@@ -434,6 +435,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def p_type_qualifier_gnu(self, p):
         """ type_qualifier  : __CONST
                             | __RESTRICT
+                            | __RESTRICT__
                             | __EXTENSION__
         """
         p[0] = p[1]
