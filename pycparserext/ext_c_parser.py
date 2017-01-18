@@ -9,42 +9,11 @@ except ImportError:
 
 
 class CParserBase(pycparser.c_parser.CParser):
-    OPT_RULES = [
-        'abstract_declarator',
-        'assignment_expression',
-        'declaration_list',
-        'declaration_specifiers',
-        'designation',
-        'expression',
-        'identifier_list',
-        'init_declarator_list',
-        'initializer_list',
-        'parameter_type_list',
-        'specifier_qualifier_list',
-        'block_item_list',
-        'type_qualifier_list',
-        'struct_declarator_list'
-    ]
-
-    def __init__(self, yacc_debug=False):
-        self.clex = self.lexer_class(
-                error_func=self._lex_error_func,
-                on_lbrace_func=self._lex_on_lbrace_func,
-                on_rbrace_func=self._lex_on_rbrace_func,
-                type_lookup_func=self._lex_type_lookup_func)
-
-        self.clex.build()
-        self.tokens = self.clex.tokens
-
-        for rule in self.OPT_RULES:
-            self._create_opt_rule(rule)
-
-        self.ext_start_symbol = "translation_unit_or_empty"
-
-        self.cparser = yacc.yacc(
-            module=self,
-            start=self.ext_start_symbol,
-            debug=yacc_debug, write_tables=False)
+    def __init__(self, **kwds):
+        kwds['lexer'] = self.lexer_class
+        kwds['lextab'] = 'pycparserext.lextab'
+        kwds['yacctab'] = 'pycparserext.yacctab'
+        pycparser.c_parser.CParser.__init__(self, **kwds)
 
     def parse(self, text, filename='', debuglevel=0,
             initial_type_symbols=set()):

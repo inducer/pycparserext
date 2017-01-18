@@ -11,3 +11,5 @@ setuptools*egg
 setuptools.pth
 distribute*egg
 distribute*tar.gz
+lextab.py
+yacctab.py
