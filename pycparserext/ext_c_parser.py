@@ -6,6 +6,7 @@ try:
     import pycparser.ply.yacc as yacc
 except ImportError:
     import ply.yacc as yacc
+from pycparser.plyparser import parameterized, template
 
 
 class CParserBase(pycparser.c_parser.CParser):
@@ -175,6 +176,7 @@ class FuncDeclExt(c_ast.Node):
 
 # {{{ attributes
 
+@template
 class _AttributesMixin(object):
     def p_attributes_opt_1(self, p):
         """ attributes_opt : attribute_decl attributes_opt
@@ -216,8 +218,9 @@ class _AttributesMixin(object):
 
     # {{{ /!\ names must match C parser to override
 
-    def p_declarator_1(self, p):
-        """ declarator  : direct_declarator attributes_opt
+    @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
+    def p_xxx_declarator_1(self, p):
+        """ xxx_declarator  : direct_xxx_declarator attributes_opt
         """
         if p[2].exprs:
             if isinstance(p[1], c_ast.ArrayDecl):
@@ -237,9 +240,11 @@ class _AttributesMixin(object):
         p[0] = p[1]
 
     # }}}
-    def p_declarator_2(self, p):
-        """declarator  : pointer direct_declarator attributes_opt
-                       | pointer attributes_opt direct_declarator
+
+    @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
+    def p_xxx_declarator_2(self, p):
+        """ xxx_declarator  : pointer xxx_declarator attributes_opt
+                            | pointer attributes_opt xxx_declarator
         """
         if hasattr(p[3], "exprs"):
             attr_decl = p[3]
@@ -350,14 +355,16 @@ class _AsmMixin(object):
 #        p[0] = p[1]
 
 
+@template
 class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     # {{{ /!\ names must match C parser to override
 
-    def p_direct_declarator_6(self, p):
-        """ direct_declarator   : direct_declarator LPAREN parameter_type_list \
-                                        RPAREN asm_opt attributes_opt
-                                | direct_declarator LPAREN identifier_list_opt \
-                                        RPAREN asm_opt attributes_opt
+    @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
+    def p_direct_xxx_declarator_6(self, p):
+        """ direct_xxx_declarator   : direct_xxx_declarator LPAREN parameter_type_list \
+                                            RPAREN asm_opt attributes_opt
+                                    | direct_xxx_declarator LPAREN identifier_list_opt \
+                                            RPAREN asm_opt attributes_opt
         """
         func = FuncDeclExt(
             args=p[3],
