@@ -353,7 +353,7 @@ class _AsmMixin(object):
 class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     # {{{ /!\ names must match C parser to override
 
-    def p_direct_declarator_5(self, p):
+    def p_direct_declarator_6(self, p):
         """ direct_declarator   : direct_declarator LPAREN parameter_type_list \
                                         RPAREN asm_opt attributes_opt
                                 | direct_declarator LPAREN identifier_list_opt \
