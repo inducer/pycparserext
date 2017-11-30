@@ -456,6 +456,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
                         | selection_statement
                         | iteration_statement
                         | jump_statement
+                        | pppragma_directive
                         | gnu_statement_expression
         """
         p[0] = p[1]
