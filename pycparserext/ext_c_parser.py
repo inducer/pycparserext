@@ -243,18 +243,15 @@ class _AttributesMixin(object):
 
     @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
     def p_xxx_declarator_2(self, p):
-        """ xxx_declarator  : pointer xxx_declarator attributes_opt
-                            | pointer attributes_opt xxx_declarator
+        """ xxx_declarator  : pointer direct_xxx_declarator attributes_opt
+                            | pointer attributes_opt direct_xxx_declarator
         """
         if hasattr(p[3], "exprs"):
             attr_decl = p[3]
             decl = p[2]
-        elif hasattr(p[2], "exprs"):
+        else:
             attr_decl = p[2]
             decl = p[3]
-        else:
-            attr_decl = None
-            decl = p[2]
 
         if not attr_decl.exprs:
             attr_decl = None
