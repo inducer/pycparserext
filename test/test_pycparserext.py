@@ -357,6 +357,24 @@ def test_no_added_attr():
     assert "attr" not in gen.visit(ast)
 
 
+def test_double_pointer():
+    src = """
+    typedef struct Error {
+        int dummy;
+    } Error;
+
+    void func_with_p2pp(const char *, Error **);
+    """
+    import pycparserext.ext_c_parser as ext_c_parser
+    import pycparserext.ext_c_generator as ext_c_generator
+
+    parser = ext_c_parser.GnuCParser()
+    ast = parser.parse(src)
+    gen = ext_c_generator.GnuCGenerator()
+    ast.show()
+    assert gen.visit(ast).find("func_with_p2pp(const char *, Error **)") != -1
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
