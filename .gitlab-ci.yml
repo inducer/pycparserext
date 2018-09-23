@@ -7,6 +7,10 @@ Python 2.7:
   - python2.7
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
 Python 3.5:
   script:
   - py_version=3.5
@@ -16,6 +20,10 @@ Python 3.5:
   - python3.5
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
 Python 3.7:
   script:
   - py_version=3.7
@@ -25,3 +33,6 @@ Python 3.7:
   - python3.7
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
