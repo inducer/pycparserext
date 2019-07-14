@@ -7,21 +7,19 @@ Python 2.7:
   - python2.7
   except:
   - tags
-Python 3.5:
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
+Python 3:
   script:
-  - py_version=3.5
+  - py_version=3
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   tags:
-  - python3.5
+  - python3
   except:
   - tags
-Python 2.6:
-  script:
-  - py_version=2.6
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
-  - ". ./build-and-test-py-project.sh"
-  tags:
-  - python2.6
-  except:
-  - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
