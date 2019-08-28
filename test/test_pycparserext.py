@@ -375,6 +375,24 @@ def test_double_pointer():
     assert gen.visit(ast).find("func_with_p2pp(const char *, Error **)") != -1
 
 
+def test_node_visitor():
+    from pycparser.c_ast import NodeVisitor
+
+    class FuncDeclVisitor(NodeVisitor):
+        def visit_FuncDecl(self, node):
+            node.show()
+
+    src = """
+    void func1();
+    int func2(int param1);
+    """
+    import pycparserext.ext_c_parser as ext_c_parser
+
+    parser = ext_c_parser.GnuCParser()
+    ast = parser.parse(src)
+    FuncDeclVisitor().visit(ast)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:

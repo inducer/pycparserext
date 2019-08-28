@@ -169,6 +169,12 @@ class FuncDeclExt(c_ast.Node):
             nodelist.append(("asm", self.asm))
         return tuple(nodelist)
 
+    def __iter__(self):
+        if self.args is not None:
+            yield self.args
+        if self.type is not None:
+            yield self.type
+
     attr_names = ()
 
 # }}}
