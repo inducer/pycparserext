@@ -47,6 +47,10 @@ class TypeList(c_ast.Node):
             nodelist.append(("types[%d]" % i, child))
         return tuple(nodelist)
 
+    def __iter__(self):
+        for child in (self.types or []):
+            yield child
+
     attr_names = ()
 
 
@@ -56,6 +60,11 @@ class AttributeSpecifier(c_ast.Node):
 
     def children(self):
         return [("exprlist", self.exprlist)]
+
+    def __iter__(self):
+        # Do not return anything, but yield is necessary to keep this function a generator
+        return
+        yield
 
     attr_names = ()
 
@@ -82,6 +91,16 @@ class Asm(c_ast.Node):
             nodelist.append(("clobbered_regs", self.clobbered_regs))
         return tuple(nodelist)
 
+    def __iter__(self):
+        if self.template is not None:
+            yield self.template
+        if self.output_operands is not None:
+            yield self.output_operands
+        if self.input_operands is not None:
+            yield self.input_operands
+        if self.clobbered_regs is not None:
+            yield self.clobbered_regs
+
     attr_names = ('asm_keyword',)
 
 
@@ -92,6 +111,11 @@ class PreprocessorLine(c_ast.Node):
 
     def children(self):
         return ()
+
+    def __iter__(self):
+        # Do not return anything, but yield is necessary to keep this function a generator
+        return
+        yield
 
     attr_names = ("contents",)
 
@@ -107,6 +131,10 @@ class TypeOfDeclaration(c_ast.Node):
             nodelist.append(("declaration", self.declaration))
         return tuple(nodelist)
 
+    def __iter__(self):
+        if self.declaration is not None:
+            yield self.declaration
+
     attr_names = ()
 
 
@@ -120,6 +148,10 @@ class TypeOfExpression(c_ast.Node):
         if self.expr is not None:
             nodelist.append(("expr", self.expr))
         return tuple(nodelist)
+
+    def __iter__(self):
+        if self.expr is not None:
+            yield self.expr
 
     attr_names = ()
 
@@ -174,6 +206,10 @@ class FuncDeclExt(c_ast.Node):
             yield self.args
         if self.type is not None:
             yield self.type
+        if self.attributes is not None:
+            yield self.attributes
+        if self.asm is not None:
+            yield self.asm
 
     attr_names = ()
 

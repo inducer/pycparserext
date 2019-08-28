@@ -378,19 +378,66 @@ def test_double_pointer():
 def test_node_visitor():
     from pycparser.c_ast import NodeVisitor
 
-    class FuncDeclVisitor(NodeVisitor):
-        def visit_FuncDecl(self, node):
-            node.show()
+    # key is type of visit, value is [actual #, expected #]
+    visits = {
+        'TypeList': [0, 1],
+        # AttributeSpecifier is part of exprlist, not nodelist
+        'AttributeSpecifier': [0, 0],
+        'Asm': [0, 1],
+        # PreprocessorLine is OpenCL, not GNU
+        'PreprocessorLine': [0, 0],
+        'TypeOfDeclaration': [0, 2],
+        'TypeOfExpression': [0, 1],
+        'FuncDeclExt': [0, 1],
+    }
 
-    src = """
-    void func1();
-    int func2(int param1);
+    class TestVisitor(NodeVisitor):
+        def visit_TypeList(self, node):
+            visits['TypeList'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_AttributeSpecifier(self, node):
+            visits['AttributeSpecifier'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_Asm(self, node):
+            visits['Asm'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_PreprocessorLine(self, node):
+            visits['PreprocessorLine'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_TypeOfDeclaration(self, node):
+            visits['TypeOfDeclaration'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_TypeOfExpression(self, node):
+            visits['TypeOfExpression'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_FuncDeclExt(self, node):
+            visits['FuncDeclExt'][0] += 1
+            NodeVisitor.generic_visit(self, node)
+
+    src_gnu = """
+    int func1(int a, int b) {
+        __typeof__(a) _a = __builtin_types_compatible_p(long char, short int);
+        __typeof__ (__typeof__ (char *)[4]) y;
+        asm("rdtsc" : "=A" (val));
+        __attribute__((unused)) static int c;
+    }
     """
     import pycparserext.ext_c_parser as ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
-    ast = parser.parse(src)
-    FuncDeclVisitor().visit(ast)
+    ast = parser.parse(src_gnu)
+    ast.show()
+    TestVisitor().visit(ast)
+    for visit_type, visit_num in visits.items():
+        assert_msg = '{}: Should have visited {}, got {}'.format(
+            visit_type, visit_num[1], visit_num[0])
+        assert visit_num[0] == visit_num[1], assert_msg
 
 
 if __name__ == "__main__":
