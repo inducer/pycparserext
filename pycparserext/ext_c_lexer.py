@@ -60,6 +60,7 @@ def add_lexer_keywords(cls, keywords):
     cls.tokens = cls.tokens + tuple(
             kw.upper() for kw in keywords)
 
+
 add_lexer_keywords(GnuCLexer, [
     '__attribute__', '__asm__', '__asm', '__typeof__',
     '__real__', '__imag__', '__builtin_types_compatible_p',

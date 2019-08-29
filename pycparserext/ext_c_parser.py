@@ -5,7 +5,7 @@ import pycparser.c_ast as c_ast
 try:
     import pycparser.ply.yacc as yacc
 except ImportError:
-    import ply.yacc as yacc
+    import ply.yacc as yacc  # noqa: F401
 from pycparser.plyparser import parameterized, template
 
 
@@ -62,7 +62,8 @@ class AttributeSpecifier(c_ast.Node):
         return [("exprlist", self.exprlist)]
 
     def __iter__(self):
-        # Do not return anything, but yield is necessary to keep this function a generator
+        # Do not return anything, but yield is necessary to keep this function
+        # a generator
         return
         yield
 
@@ -113,7 +114,8 @@ class PreprocessorLine(c_ast.Node):
         return ()
 
     def __iter__(self):
-        # Do not return anything, but yield is necessary to keep this function a generator
+        # Do not return anything, but yield is necessary to keep this function
+        # a generator
         return
         yield
 
@@ -402,8 +404,9 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     def p_direct_xxx_declarator_6(self, p):
         """ direct_xxx_declarator   : direct_xxx_declarator LPAREN parameter_type_list \
                                             RPAREN asm_opt attributes_opt
-                                    | direct_xxx_declarator LPAREN identifier_list_opt \
-                                            RPAREN asm_opt attributes_opt
+                                    | direct_xxx_declarator \
+                                            LPAREN identifier_list_opt RPAREN \
+                                            asm_opt attributes_opt
         """
         func = FuncDeclExt(
             args=p[3],

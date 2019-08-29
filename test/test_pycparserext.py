@@ -298,7 +298,6 @@ def test_nesty_c_declarator():
     ast.show()
 
 
-
 def test_const_ptr_func_arg():
     src = """
     const int *bar;

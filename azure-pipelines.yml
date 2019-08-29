@@ -1,0 +1,47 @@
+jobs:
+-
+    job: 'Pytest'
+    pool:
+        vmImage: 'ubuntu-16.04'
+    strategy:
+        matrix:
+            Python27:
+                python.version: '2.7'
+            Python36:
+                python.version: '3.6'
+
+    steps:
+    -
+        task: UsePythonVersion@0
+        inputs:
+            versionSpec: '$(python.version)'
+
+    -
+        script: |
+            set -e
+            curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+            . ./build-and-test-py-project.sh
+
+        displayName: 'Pytest'
+-
+    job: 'Flake8'
+    pool:
+        vmImage: 'ubuntu-16.04'
+    strategy:
+        matrix:
+            Python36:
+                python.version: '3.6'
+
+    steps:
+    -
+        task: UsePythonVersion@0
+        inputs:
+            versionSpec: '$(python.version)'
+
+    -
+        script: |
+            set -e
+            curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/prepare-and-run-flake8.sh
+            . ./prepare-and-run-flake8.sh pycparserext test
+
+        displayName: 'Flake8'
