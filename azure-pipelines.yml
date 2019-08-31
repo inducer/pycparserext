@@ -37,7 +37,7 @@ jobs:
         vmImage: 'ubuntu-latest'
     strategy:
         matrix:
-            Python36:
+            Python37:
                 python.version: '3.7'
 
     steps:
