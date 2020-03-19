@@ -4,9 +4,9 @@ Extended functionality for pycparser
 .. image:: https://gitlab.tiker.net/inducer/pycparserext/badges/master/pipeline.svg
     :alt: Gitlab Build Status
     :target: https://gitlab.tiker.net/inducer/pycparserext/commits/master
-.. image:: https://dev.azure.com/ak-spam/inducer/_apis/build/status/inducer.pycparserext?branchName=master
-    :alt: Azure Build Status
-    :target: https://dev.azure.com/ak-spam/inducer/_build/latest?definitionId=4&branchName=master
+.. image:: https://github.com/inducer/pycparserext/workflows/CI/badge.svg?branch=master
+    :alt: Github Build Status
+    :target: https://github.com/inducer/pycparserext/actions?query=branch%3Amaster+workflow%3ACI
 .. image:: https://badge.fury.io/py/pycparserext.png
     :alt: Python Package Index Release Page
     :target: https://pypi.org/project/pycparserext/
