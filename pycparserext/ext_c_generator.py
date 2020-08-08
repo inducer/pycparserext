@@ -136,10 +136,10 @@ class AsmAndAttributesMixin(object):
 
 class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
     def visit_TypeOfDeclaration(self, n):
-        return "__typeof__(%s)" % self.visit(n.declaration)
+        return "%s(%s)" % (n.typeof_keyword, self.visit(n.declaration))
 
     def visit_TypeOfExpression(self, n):
-        return "__typeof__(%s)" % self.visit(n.expr)
+        return "%s(%s)" % (n.typeof_keyword, self.visit(n.expr))
 
     def visit_TypeList(self, n):
         return ', '.join(self.visit(ch) for ch in n.types)

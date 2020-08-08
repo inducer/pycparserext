@@ -476,7 +476,7 @@ def test_node_visitor():
         'Asm': [0, 1],
         # PreprocessorLine is OpenCL, not GNU
         'PreprocessorLine': [0, 0],
-        'TypeOfDeclaration': [0, 2],
+        'TypeOfDeclaration': [0, 4],
         'TypeOfExpression': [0, 1],
         'FuncDeclExt': [0, 1],
     }
@@ -514,6 +514,7 @@ def test_node_visitor():
     int func1(int a, int b) {
         __typeof__(a) _a = __builtin_types_compatible_p(long char, short int);
         __typeof__ (__typeof__ (char *)[4]) y;
+        typeof (typeof (char *)[4]) z;
         asm("rdtsc" : "=A" (val));
         __attribute__((unused)) static int c;
     }
@@ -528,6 +529,53 @@ def test_node_visitor():
         assert_msg = '{}: Should have visited {}, got {}'.format(
             visit_type, visit_num[1], visit_num[0])
         assert visit_num[0] == visit_num[1], assert_msg
+
+
+def test_typeof_reproduction():
+    src = """
+    int func(int a, int b) {
+        __typeof__(a) _a = a;
+        typeof(b) _b = b;
+
+        __typeof__ (__typeof__ (char *)[4]) y;
+        typeof (typeof (char *)[4]) z;
+    }
+    """
+    assert _round_trip_matches(src)
+
+    import pycparserext.ext_c_parser as ext_c_parser
+    from pycparser.c_ast import NodeVisitor
+
+    # key is type of visit, value is
+    # [actual # __typeof__, expected # __typeof__,
+    #   actual # typeof, expected # typeof]
+    visits = {
+        'TypeOfDeclaration': [0, 2, 0, 2],
+        'TypeOfExpression': [0, 1, 0, 1],
+    }
+
+    class TestVisitor(NodeVisitor):
+        def visit_TypeOfDeclaration(self, node):
+            idx = 0 if node.typeof_keyword == '__typeof__' else 2
+            visits['TypeOfDeclaration'][idx] += 1
+            NodeVisitor.generic_visit(self, node)
+
+        def visit_TypeOfExpression(self, node):
+            idx = 0 if node.typeof_keyword == '__typeof__' else 2
+            visits['TypeOfExpression'][idx] += 1
+            NodeVisitor.generic_visit(self, node)
+
+    parser = ext_c_parser.GnuCParser()
+    ast = parser.parse(src)
+    ast.show()
+    TestVisitor().visit(ast)
+    for visit_type, visit_num in visits.items():
+        assert_msg = '{}: Should have visited ({}, {}), got ({}, {})'.format(
+            visit_type,
+            visit_num[1], visit_num[3],
+            visit_num[0], visit_num[2])
+        assert visit_num[0] == visit_num[1] and \
+               visit_num[2] == visit_num[3], assert_msg
 
 
 if __name__ == "__main__":

@@ -123,7 +123,8 @@ class PreprocessorLine(c_ast.Node):
 
 
 class TypeOfDeclaration(c_ast.Node):
-    def __init__(self, declaration, coord=None):
+    def __init__(self, typeof_keyword, declaration, coord=None):
+        self.typeof_keyword = typeof_keyword
         self.declaration = declaration
         self.coord = coord
 
@@ -137,11 +138,12 @@ class TypeOfDeclaration(c_ast.Node):
         if self.declaration is not None:
             yield self.declaration
 
-    attr_names = ()
+    attr_names = ('typeof_keyword',)
 
 
 class TypeOfExpression(c_ast.Node):
-    def __init__(self, expr, coord=None):
+    def __init__(self, typeof_keyword, expr, coord=None):
+        self.typeof_keyword = typeof_keyword
         self.expr = expr
         self.coord = coord
 
@@ -155,7 +157,7 @@ class TypeOfExpression(c_ast.Node):
         if self.expr is not None:
             yield self.expr
 
-    attr_names = ()
+    attr_names = ('typeof_keyword',)
 
 
 class RangeExpression(c_ast.Node):
@@ -484,16 +486,18 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
     def p_type_specifier_gnu_typeof_expr(self, p):
         """ type_specifier  : __TYPEOF__ LPAREN expression RPAREN
+                            | TYPEOF LPAREN expression RPAREN
         """
         if isinstance(p[3], c_ast.TypeDecl):
             pass
 
-        p[0] = TypeOfExpression(p[3])
+        p[0] = TypeOfExpression(p[1], p[3])
 
     def p_type_specifier_gnu_typeof_decl(self, p):
         """ type_specifier  : __TYPEOF__ LPAREN parameter_declaration RPAREN
+                            | TYPEOF LPAREN parameter_declaration RPAREN
         """
-        p[0] = TypeOfDeclaration(p[3])
+        p[0] = TypeOfDeclaration(p[1], p[3])
 
     def p_unary_operator_gnu(self, p):
         """ unary_operator  : __REAL__
