@@ -158,6 +158,29 @@ class TypeOfExpression(c_ast.Node):
     attr_names = ()
 
 
+class RangeExpression(c_ast.Node):
+    def __init__(self, first, last, coord=None):
+        self.first = first
+        self.last = last
+        self.coord = coord
+
+    def children(self):
+        nodelist = []
+        if self.first is not None:
+            nodelist.append(("first", self.first))
+        if self.last is not None:
+            nodelist.append(("last", self.last))
+        return tuple(nodelist)
+
+    def __iter__(self):
+        if self.first is not None:
+            yield self.first
+        if self.last is not None:
+            yield self.last
+
+    attr_names = ()
+
+
 # These are the same as pycparser's, but it does *not* declare __slots__--
 # so we can poke in attributes at our leisure.
 class TypeDeclExt(c_ast.TypeDecl):
@@ -511,6 +534,11 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def p_struct_declaration_list_1(self, p):
         """ struct_declaration_list : empty """
         p[0] = None
+
+    def p_range_designator(self, p):
+        """ designator  : LBRACKET constant_expression ELLIPSIS constant_expression RBRACKET
+        """
+        p[0] = RangeExpression(p[2], p[4], coord=self._coord(p.lineno(1)))
 
 # }}}
 
