@@ -387,17 +387,17 @@ class _AsmMixin(object):
         p[0] = Asm(p[1], p[3], p[5], p[7], p[9], coord=self._coord(p.lineno(2)))
 
     def p_asm_keyword(self, p):
-        """ asm_keyword : __ASM__ asm_volatile
-                        | __ASM asm_volatile
-                        | ASM asm_volatile
+        """ asm_keyword : __ASM__ asm_volatile_opt
+                        | __ASM asm_volatile_opt
+                        | ASM asm_volatile_opt
         """
         p[0] = p[1]
         if p[2]:
             p[0] += ' ' + p[2]
 
-    def p_asm_volatile(self, p):
-        """ asm_volatile : VOLATILE
-                         | empty
+    def p_asm_volatile_opt(self, p):
+        """ asm_volatile_opt : unified_volatile
+                             | empty
         """
         p[0] = p[1]
 
@@ -475,7 +475,10 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def p_type_qualifier_gnu(self, p):
         """ type_qualifier  : __CONST
                             | __RESTRICT
+                            | __RESTRICT__
                             | __EXTENSION__
+                            | __VOLATILE
+                            | __VOLATILE__
         """
         p[0] = p[1]
 
@@ -540,6 +543,12 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         """
         p[0] = RangeExpression(p[2], p[4], coord=self._coord(p.lineno(1)))
 
+    def p_unified_volatile_gnu(self, p):
+        """ unified_volatile : VOLATILE
+                             | __VOLATILE
+                             | __VOLATILE__
+        """
+        p[0] = p[1]
 # }}}
 
 
@@ -612,6 +621,11 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
     def p_function_specifier_cl(self, p):
         """ function_specifier  : __KERNEL
                                 | KERNEL
+        """
+        p[0] = p[1]
+
+    def p_unified_volatile_cl(self, p):
+        """ unified_volatile : VOLATILE
         """
         p[0] = p[1]
 
