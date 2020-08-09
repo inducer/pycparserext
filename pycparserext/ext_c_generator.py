@@ -138,6 +138,9 @@ class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
     def visit_TypeList(self, n):
         return ', '.join(self.visit(ch) for ch in n.types)
 
+    def visit_RangeExpression(self, n):
+        return '%s ... %s' % (self.visit(n.first), self.visit(n.last))
+
 
 class GNUCGenerator(GnuCGenerator):
     def __init__(self):

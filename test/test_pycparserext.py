@@ -2,6 +2,53 @@ from __future__ import print_function
 import pytest
 
 
+# Inspired from pycparser's compare_asts test function
+def _compare_asts(first, second):
+    if type(first) is not type(second):
+        return False
+
+    if isinstance(first, tuple):
+        if first[0] != second[0]:
+            return False
+
+        return _compare_asts(first[1], second[1])
+
+    for attr in first.attr_names:
+        if getattr(first, attr) != getattr(second, attr):
+            return False
+
+    for i, c1 in enumerate(first.children()):
+        if not _compare_asts(c1, second.children()[i]):
+            return False
+    return True
+
+
+def _round_trip_matches(src):
+    from pycparserext.ext_c_parser import GnuCParser
+    from pycparserext.ext_c_generator import GnuCGenerator
+
+    p = GnuCParser()
+
+    first_ast = p.parse(src)
+
+    gen = GnuCGenerator().visit(first_ast)
+
+    second_ast = p.parse(gen)
+
+    if not _compare_asts(first_ast, second_ast):
+        print('First AST:')
+        first_ast.show()
+
+        print('Generated code:')
+        print(gen)
+
+        print('Second AST:')
+        second_ast.show()
+
+        return False
+    return True
+
+
 def test_asm_volatile_1():
     src = """
     void read_tsc(void) {
@@ -372,6 +419,23 @@ def test_double_pointer():
     gen = ext_c_generator.GnuCGenerator()
     ast.show()
     assert gen.visit(ast).find("func_with_p2pp(const char *, Error **)") != -1
+
+
+def test_designated_initializers():
+    src = """
+    int a[6] = { [4] = 29, [2] = 15 };
+
+    int widths[] = { [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 };
+
+    int v1 = 5, v2 = 6;
+    int b[] = { [1] = v1, v2, [4] = v4 };
+
+    struct foo { int x; int y; };
+    struct foo bar[10] = { [1].y = 5, [2].x = 1, [0].x = 3 };
+
+    char char_map[256] = { [0 ... 255] = '?', ['0' ... '9'] = 'X' };
+    """
+    assert _round_trip_matches(src)
 
 
 def test_node_visitor():
