@@ -61,16 +61,30 @@ def add_lexer_keywords(cls, keywords):
             kw.upper() for kw in keywords)
 
 
-add_lexer_keywords(GnuCLexer, [
-    '__attribute__', '__asm__', '__asm', '__typeof__',
-    '__real__', '__imag__', '__builtin_types_compatible_p',
-    '__const', '__restrict', '__inline', '__inline__',
-    '__extension__', 'asm', '__attribute'])
+_COMMON_KEYWORDS = [
+    '__attribute__', '__attribute',
+    '__asm__', '__asm', 'asm']
 
-_CL_KEYWORDS = ['kernel', 'constant', 'global', 'local', 'private',
-        "read_only", "write_only", "read_write"]
-add_lexer_keywords(OpenCLCLexer, [
-    '__attribute__', '__attribute', '__asm__', '__asm', 'asm']
-    + _CL_KEYWORDS + ["__"+kw for kw in _CL_KEYWORDS])
+_GNU_KEYWORDS = [
+    '__typeof__',
+    '__real__', '__imag__',
+    '__builtin_types_compatible_p',
+    '__const',
+    '__restrict__', '__restrict',
+    '__inline__', '__inline',
+    '__extension__',
+    '__volatile', '__volatile__']
+
+add_lexer_keywords(GnuCLexer, _COMMON_KEYWORDS + _GNU_KEYWORDS)
+
+# These will be added as unadorned keywords and keywords with '__' prepended
+_CL_BASE_KEYWORDS = [
+    'kernel', 'constant', 'global', 'local', 'private',
+    'read_only', 'write_only', 'read_write']
+
+_CL_KEYWORDS = _COMMON_KEYWORDS
+_CL_KEYWORDS += _CL_BASE_KEYWORDS + ["__"+kw for kw in _CL_BASE_KEYWORDS]
+
+add_lexer_keywords(OpenCLCLexer, _CL_KEYWORDS)
 
 # vim: fdm=marker

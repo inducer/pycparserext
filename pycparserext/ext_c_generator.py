@@ -63,7 +63,13 @@ class AsmAndAttributesMixin(object):
                 if isinstance(modifier, c_ast.ArrayDecl):
                     if (i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl)):
                         nstr = '(' + nstr + ')'
-                    nstr += '[' + self.visit(modifier.dim) + ']'
+
+                    # BUG FIX: pycparser ignores quals
+                    dim_quals = (' '.join(modifier.dim_quals) + ' '
+                                 if modifier.dim_quals else '')
+
+                    nstr += '[' + dim_quals + self.visit(modifier.dim) + ']'
+
                 elif isinstance(modifier, c_ast.FuncDecl):
                     if (i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl)):
                         nstr = '(' + nstr + ')'

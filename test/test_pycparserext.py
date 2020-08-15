@@ -94,6 +94,20 @@ def test_asm_volatile_3():
     print(GnuCGenerator().visit(ast))
 
 
+def test_asm_volatile_4():
+    src = """
+    void barrier(void) {
+        __asm__ __volatile__("": : :"memory");
+    }    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+
 def test_funky_header_code():
     src = """
         extern __inline int __attribute__ ((__nothrow__)) __signbitf (float __x)
@@ -435,6 +449,19 @@ def test_designated_initializers():
 
     char char_map[256] = { [0 ... 255] = '?', ['0' ... '9'] = 'X' };
     """
+    assert _round_trip_matches(src)
+
+
+@pytest.mark.parametrize("restrict_kw", ["restrict", "__restrict__", "__restrict"])
+def test_restrict(restrict_kw):
+    src = """
+    void f(int n, int * {0} p, int * {0} q)
+    {{
+    }}
+    typedef int *array_t[10];
+    {0} array_t a;
+    void f(int m, int n, float a[{0} m][n], float b[{0} m][n]);
+    """ .format(restrict_kw)
     assert _round_trip_matches(src)
 
 
