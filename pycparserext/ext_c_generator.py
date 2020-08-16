@@ -61,7 +61,7 @@ class AsmAndAttributesMixin(object):
             #
             for i, modifier in enumerate(modifiers):
                 if isinstance(modifier, c_ast.ArrayDecl):
-                    if (i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl)):
+                    if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
                         nstr = '(' + nstr + ')'
 
                     # BUG FIX: pycparser ignores quals
@@ -71,11 +71,12 @@ class AsmAndAttributesMixin(object):
                     nstr += '[' + dim_quals + self.visit(modifier.dim) + ']'
 
                 elif isinstance(modifier, c_ast.FuncDecl):
-                    if (i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl)):
+                    if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
                         nstr = '(' + nstr + ')'
                     nstr += '(' + self.visit(modifier.args) + ')'
+
                 elif isinstance(modifier, FuncDeclExt):
-                    if (i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl)):
+                    if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
                         nstr = '(' + nstr + ')'
                     nstr += '(' + self.visit(modifier.args) + ')'
 
@@ -95,20 +96,28 @@ class AsmAndAttributesMixin(object):
                         quals = quals + ' '
                     nstr = '*' + quals + nstr
 
+            if hasattr(n, "asm") and n.asm:
+                nstr += self.visit(n.asm)
+
             if hasattr(n, "attributes") and n.attributes.exprs:
                 nstr += ' __attribute__((' + self.visit(n.attributes) + '))'
 
             if nstr:
                 s += ' ' + nstr
             return s
+
         elif typ == c_ast.Decl:
             return self._generate_decl(n.type)
+
         elif typ == c_ast.Typename:
             return self._generate_type(n.type)
+
         elif typ == c_ast.IdentifierType:
             return ' '.join(n.names) + ' '
+
         elif typ in (c_ast.ArrayDecl, c_ast.PtrDecl, c_ast.FuncDecl, FuncDeclExt):
             return self._generate_type(n.type, modifiers + [n])
+
         else:
             return self.visit(n)
 
