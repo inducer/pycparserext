@@ -595,6 +595,21 @@ def test_typeof_reproduction():
                visit_num[2] == visit_num[3], assert_msg
 
 
+def test_typedef():
+    from pycparser import c_ast
+    from pycparserext.ext_c_parser import GnuCParser
+    from pycparserext.ext_c_generator import GnuCGenerator
+
+    p = GnuCParser()
+
+    first_ast = p.parse('typedef int foo;').ext[0]
+    assert isinstance(first_ast, c_ast.Typedef)
+
+    gen = GnuCGenerator().visit(first_ast.type)
+
+    assert gen == 'int'
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
