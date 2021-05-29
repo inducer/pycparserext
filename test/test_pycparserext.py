@@ -300,6 +300,23 @@ def test_array_ptr_decl_attribute():
     print(GnuCGenerator().visit(ast))
 
 
+def test_func_attribute_before_direct_declarator():
+    src = """
+    int __attribute__((stdcall)) function(void);
+    int (*fptr1)(int, int);
+    int (* __attribute__((stdcall)) fptr2)(int, int);
+    int (__attribute__((stdcall)) *fptr3)(int, int);
+    """
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+
+
 def test_gnu_statement_expression():
     src = """
       int func(int a) {

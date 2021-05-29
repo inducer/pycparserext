@@ -404,22 +404,31 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
                                 attributes_opt
                             | pointer attributes_opt direct_xxx_declarator \
                                 asm_label_opt
+                            | attributes_opt pointer direct_xxx_declarator \
+                                asm_label_opt
         """
         if hasattr(p[4], "exprs"):
             attr_decl = p[4]
             asm_label = p[3]
             decl = p[2]
-        else:
+            ptr = p[1]
+        elif hasattr(p[2], "exprs"):
             attr_decl = p[2]
             asm_label = p[4]
             decl = p[3]
+            ptr = p[1]
+        else:
+            attr_decl = p[1]
+            asm_label = p[4]
+            decl = p[3]
+            ptr = p[2]
 
         if asm_label or attr_decl.exprs:
             if isinstance(decl, (c_ast.ArrayDecl, c_ast.FuncDecl)):
-                decl_ext = to_decl_ext(decl.type)
+                decl = to_decl_ext(decl.type)
 
             elif isinstance(decl, c_ast.TypeDecl):
-                decl_ext = to_decl_ext(decl)
+                decl = to_decl_ext(decl)
 
             else:
                 raise NotImplementedError(
@@ -427,14 +436,12 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
                     % type(p[1]))
 
             if asm_label:
-                decl_ext.asm = asm_label
+                decl.asm = asm_label
 
             if attr_decl.exprs:
-                decl_ext.attributes = attr_decl
+                decl.attributes = attr_decl
 
-            p[1] = decl_ext
-
-        p[0] = self._type_modify_decl(decl, p[1])
+        p[0] = self._type_modify_decl(decl, ptr)
 
     @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
     def p_direct_xxx_declarator_6(self, p):
