@@ -302,7 +302,9 @@ def test_array_ptr_decl_attribute():
 
 def test_func_attribute_before_direct_declarator():
     src = """
-    int __attribute__((stdcall)) function(void);
+    __attribute__((stdcall)) int func1(void);
+    int __attribute__((stdcall)) func2(void);
+    int func3(void) __attribute__((stdcall));
     int (*fptr1)(int, int);
     int (* __attribute__((stdcall)) fptr2)(int, int);
     int (__attribute__((stdcall)) *fptr3)(int, int);
@@ -313,8 +315,20 @@ def test_func_attribute_before_direct_declarator():
     ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator
-    print(GnuCGenerator().visit(ast))
+    src_regen = GnuCGenerator().visit(ast)
+    print(src_regen)
 
+    # _round_trip_matches trips at comparing the function specifiers here, as they are lists
+    # (how was this supposed to work, again?)
+    # assert _round_trip_matches(src)
+
+    assert src_regen == """ __attribute__((stdcall)) int func1(void);
+ __attribute__((stdcall)) int func2(void);
+int func3(void) __attribute__((stdcall));
+int (*fptr1)(int, int);
+int (*fptr2)(int, int) __attribute__((stdcall));
+int (*fptr3)(int, int) __attribute__((stdcall));
+"""
 
 
 def test_gnu_statement_expression():
