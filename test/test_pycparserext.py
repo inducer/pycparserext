@@ -318,7 +318,8 @@ def test_func_attribute_before_direct_declarator():
     src_regen = GnuCGenerator().visit(ast)
     print(src_regen)
 
-    # _round_trip_matches trips at comparing the function specifiers here, as they are lists
+    # _round_trip_matches trips at comparing the function
+    #   specifiers here, as they are lists
     # (how was this supposed to work, again?)
     # assert _round_trip_matches(src)
 
