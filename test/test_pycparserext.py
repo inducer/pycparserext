@@ -469,6 +469,22 @@ def test_designated_initializers():
     assert _round_trip_matches(src)
 
 
+def test_case_ranges():
+    src = """
+    void f() {
+        switch (1) {
+            case 3:
+                break;
+            case 0 ... 5:
+                break;
+            case 'A' ... 'Z':
+                break;
+        }
+    }
+    """
+    assert _round_trip_matches(src)
+
+
 @pytest.mark.parametrize("restrict_kw", ["restrict", "__restrict__", "__restrict"])
 def test_restrict(restrict_kw):
     src = """

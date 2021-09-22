@@ -558,6 +558,15 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         """
         p[0] = RangeExpression(p[2], p[4], coord=self._coord(p.lineno(1)))
 
+    def p_labeled_statement_4(self, p):
+        """ labeled_statement : CASE constant_expression ELLIPSIS constant_expression \
+                COLON pragmacomp_or_statement
+        """
+        p[0] = c_ast.Case(
+                RangeExpression(p[2], p[4], coord=self._coord(p.lineno(1))),
+                [p[6]],
+                self._coord(p.lineno(1)))
+
     def p_unified_volatile_gnu(self, p):
         """ unified_volatile : VOLATILE
                              | __VOLATILE
