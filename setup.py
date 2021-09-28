@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name="pycparserext",
-      version="2020.1",
+      version="2021.1",
       description="Extensions for pycparser",
       long_description=open("README.rst", "r").read(),
       classifiers=[
