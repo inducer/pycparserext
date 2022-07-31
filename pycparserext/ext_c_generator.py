@@ -39,12 +39,14 @@ class AsmAndAttributesMixin(object):
                 " : ".join(
                     self.visit(c) for c in components))
 
-    def _generate_type(self, n, modifiers=[], emit_declname=True):
+    def _generate_type(self, n, modifiers=None, emit_declname=True):
         """ Recursive generation from a type node. n is the type node.
             modifiers collects the PtrDecl, ArrayDecl and FuncDecl modifiers
             encountered on the way down to a TypeDecl, to allow proper
             generation from it.
         """
+        if modifiers is None:
+            modifiers = []
         typ = type(n)
         #~ print(n, modifiers)
 
