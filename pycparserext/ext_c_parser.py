@@ -16,7 +16,8 @@ class CParserBase(pycparser.c_parser.CParser):
         kwds['yacctab'] = 'pycparserext.yacctab'
         pycparser.c_parser.CParser.__init__(self, **kwds)
 
-    def parse(self, text, filename='', debuglevel=0, initial_type_symbols=set()):
+    def parse(self, text, filename='', debuglevel=0,
+            initial_type_symbols=frozenset()):
         self.clex.filename = filename
         self.clex.reset_lineno()
 
@@ -438,8 +439,9 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
 
     @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
     def p_direct_xxx_declarator_6(self, p):
-        """ direct_xxx_declarator   : direct_xxx_declarator LPAREN parameter_type_list \
-                                            RPAREN asm_opt attributes_opt
+        """ direct_xxx_declarator   : direct_xxx_declarator \
+                                            LPAREN parameter_type_list RPAREN \
+                                            asm_opt attributes_opt
                                     | direct_xxx_declarator \
                                             LPAREN identifier_list_opt RPAREN \
                                             asm_label_opt attributes_opt
@@ -554,13 +556,15 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         p[0] = None
 
     def p_range_designator(self, p):
-        """ designator  : LBRACKET constant_expression ELLIPSIS constant_expression RBRACKET
+        """ designator  : LBRACKET constant_expression \
+                            ELLIPSIS constant_expression RBRACKET
         """
         p[0] = RangeExpression(p[2], p[4], coord=self._coord(p.lineno(1)))
 
     def p_labeled_statement_4(self, p):
-        """ labeled_statement : CASE constant_expression ELLIPSIS constant_expression \
-                COLON pragmacomp_or_statement
+        """ labeled_statement : CASE constant_expression \
+                                    ELLIPSIS constant_expression \
+                                    COLON pragmacomp_or_statement
         """
         p[0] = c_ast.Case(
                 RangeExpression(p[2], p[4], coord=self._coord(p.lineno(1))),

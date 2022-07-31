@@ -36,13 +36,13 @@ def _round_trip_matches(src):
     second_ast = p.parse(gen)
 
     if not _compare_asts(first_ast, second_ast):
-        print('First AST:')
+        print("First AST:")
         first_ast.show()
 
-        print('Generated code:')
+        print("Generated code:")
         print(gen)
 
-        print('Second AST:')
+        print("Second AST:")
         second_ast.show()
 
         return False
@@ -503,44 +503,44 @@ def test_node_visitor():
 
     # key is type of visit, value is [actual #, expected #]
     visits = {
-        'TypeList': [0, 1],
+        "TypeList": [0, 1],
         # AttributeSpecifier is part of exprlist, not nodelist
-        'AttributeSpecifier': [0, 0],
-        'Asm': [0, 1],
+        "AttributeSpecifier": [0, 0],
+        "Asm": [0, 1],
         # PreprocessorLine is OpenCL, not GNU
-        'PreprocessorLine': [0, 0],
-        'TypeOfDeclaration': [0, 4],
-        'TypeOfExpression': [0, 1],
-        'FuncDeclExt': [0, 1],
+        "PreprocessorLine": [0, 0],
+        "TypeOfDeclaration": [0, 4],
+        "TypeOfExpression": [0, 1],
+        "FuncDeclExt": [0, 1],
     }
 
     class TestVisitor(NodeVisitor):
         def visit_TypeList(self, node):
-            visits['TypeList'][0] += 1
+            visits["TypeList"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_AttributeSpecifier(self, node):
-            visits['AttributeSpecifier'][0] += 1
+            visits["AttributeSpecifier"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_Asm(self, node):
-            visits['Asm'][0] += 1
+            visits["Asm"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_PreprocessorLine(self, node):
-            visits['PreprocessorLine'][0] += 1
+            visits["PreprocessorLine"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_TypeOfDeclaration(self, node):
-            visits['TypeOfDeclaration'][0] += 1
+            visits["TypeOfDeclaration"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_TypeOfExpression(self, node):
-            visits['TypeOfExpression'][0] += 1
+            visits["TypeOfExpression"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_FuncDeclExt(self, node):
-            visits['FuncDeclExt'][0] += 1
+            visits["FuncDeclExt"][0] += 1
             NodeVisitor.generic_visit(self, node)
 
     src_gnu = """
@@ -559,7 +559,7 @@ def test_node_visitor():
     ast.show()
     TestVisitor().visit(ast)
     for visit_type, visit_num in visits.items():
-        assert_msg = '{}: Should have visited {}, got {}'.format(
+        assert_msg = "{}: Should have visited {}, got {}".format(
             visit_type, visit_num[1], visit_num[0])
         assert visit_num[0] == visit_num[1], assert_msg
 
@@ -583,19 +583,19 @@ def test_typeof_reproduction():
     # [actual # __typeof__, expected # __typeof__,
     #   actual # typeof, expected # typeof]
     visits = {
-        'TypeOfDeclaration': [0, 2, 0, 2],
-        'TypeOfExpression': [0, 1, 0, 1],
+        "TypeOfDeclaration": [0, 2, 0, 2],
+        "TypeOfExpression": [0, 1, 0, 1],
     }
 
     class TestVisitor(NodeVisitor):
         def visit_TypeOfDeclaration(self, node):
-            idx = 0 if node.typeof_keyword == '__typeof__' else 2
-            visits['TypeOfDeclaration'][idx] += 1
+            idx = 0 if node.typeof_keyword == "__typeof__" else 2
+            visits["TypeOfDeclaration"][idx] += 1
             NodeVisitor.generic_visit(self, node)
 
         def visit_TypeOfExpression(self, node):
-            idx = 0 if node.typeof_keyword == '__typeof__' else 2
-            visits['TypeOfExpression'][idx] += 1
+            idx = 0 if node.typeof_keyword == "__typeof__" else 2
+            visits["TypeOfExpression"][idx] += 1
             NodeVisitor.generic_visit(self, node)
 
     parser = ext_c_parser.GnuCParser()
@@ -603,7 +603,7 @@ def test_typeof_reproduction():
     ast.show()
     TestVisitor().visit(ast)
     for visit_type, visit_num in visits.items():
-        assert_msg = '{}: Should have visited ({}, {}), got ({}, {})'.format(
+        assert_msg = "{}: Should have visited ({}, {}), got ({}, {})".format(
             visit_type,
             visit_num[1], visit_num[3],
             visit_num[0], visit_num[2])
@@ -618,12 +618,12 @@ def test_typedef():
 
     p = GnuCParser()
 
-    first_ast = p.parse('typedef int foo;').ext[0]
+    first_ast = p.parse("typedef int foo;").ext[0]
     assert isinstance(first_ast, c_ast.Typedef)
 
     gen = GnuCGenerator().visit(first_ast.type)
 
-    assert gen == 'int'
+    assert gen == "int"
 
 
 if __name__ == "__main__":
