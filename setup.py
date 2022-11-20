@@ -18,7 +18,7 @@ setup(name="pycparserext",
           'Topic :: Utilities',
           ],
 
-      python_requires="~=3.6",
+      python_requires="~=3.8",
       install_requires=[
           "ply>=3.4",
           "pycparser>=2.18,<=2.20",
