@@ -546,6 +546,14 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         """
         p[0] = p[1]
 
+    def p_gnu_primary_expression_7(self, p):
+        """ primary_expression : __EXTENSION__ primary_expression """
+        p[0] = p[2]
+
+    def p_gnu_assignment_expression_2(self, p):
+        """ assignment_expression : __EXTENSION__ assignment_expression """
+        p[0] = p[2]
+
     def p_attribute_const(self, p):
         """ attribute : __CONST
         """
