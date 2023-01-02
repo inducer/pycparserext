@@ -183,6 +183,23 @@ class RangeExpression(c_ast.Node):
     attr_names = ()
 
 
+class CompoundExpression(c_ast.Node):
+    def __init__(self, stmt, coord=None):
+        self.stmt = stmt
+        self.coord = coord
+
+    def children(self):
+        nodelist = []
+        if self.stmt is not None: nodelist.append(("stmt", self.stmt))
+        return tuple(nodelist)
+
+    def __iter__(self):
+        if self.stmt is not None:
+            yield self.stmt
+
+    attr_names = ()
+
+
 # These are the same as pycparser's, but it does *not* declare __slots__--
 # so we can poke in attributes at our leisure.
 class TypeDeclExt(c_ast.TypeDecl):
@@ -528,22 +545,10 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def p_gnu_statement_expression(self, p):
         """ gnu_statement_expression : LPAREN compound_statement RPAREN
         """
-        p[0] = p[2]
+        p[0] = CompoundExpression(p[2], coord=self._coord(p.lineno(1)))
 
     def p_gnu_primary_expression_6(self, p):
         """ primary_expression : gnu_statement_expression """
-        p[0] = p[1]
-
-    def p_statement(self, p):
-        """ statement   : labeled_statement
-                        | expression_statement
-                        | compound_statement
-                        | selection_statement
-                        | iteration_statement
-                        | jump_statement
-                        | pppragma_directive
-                        | gnu_statement_expression
-        """
         p[0] = p[1]
 
     def p_attribute_const(self, p):
