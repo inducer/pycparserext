@@ -54,8 +54,7 @@ def add_lexer_keywords(cls, keywords):
             kw.upper() for kw in keywords)
 
     cls.keyword_map = cls.keyword_map.copy()
-    cls.keyword_map.update(dict(
-        (kw, kw.upper()) for kw in keywords))
+    cls.keyword_map.update({kw: kw.upper() for kw in keywords})
 
     cls.tokens = cls.tokens + tuple(
             kw.upper() for kw in keywords)

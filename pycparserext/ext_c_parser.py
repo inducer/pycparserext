@@ -23,9 +23,9 @@ class CParserBase(pycparser.c_parser.CParser):
 
         # _scope_stack[-1] is the current (topmost) scope.
 
-        initial_scope = dict((tpsym, 1) for tpsym in initial_type_symbols)
+        initial_scope = {tpsym: 1 for tpsym in initial_type_symbols}
         initial_scope.update(
-                dict((tpsym, 1) for tpsym in self.initial_type_symbols))
+                {tpsym: 1 for tpsym in self.initial_type_symbols})
         self._scope_stack = [initial_scope]
 
         if not text or text.isspace():
@@ -479,7 +479,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
     from pycparserext.ext_c_lexer import GnuCLexer as lexer_class  # noqa
 
-    initial_type_symbols = set(["__builtin_va_list"])
+    initial_type_symbols = {"__builtin_va_list"}
 
     def p_function_specifier_gnu(self, p):
         """ function_specifier  : __INLINE
@@ -585,32 +585,32 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
 
     INT_BIT_COUNTS = [8, 16, 32, 64]
     initial_type_symbols = (
-            set([
+            {
                 "%s%d" % (base_name, count)
                 for base_name in [
                     'char', 'uchar', 'short', 'ushort', 'int', 'uint',
                     'long', 'ulong', 'float', 'double', 'half']
                 for count in [2, 3, 4, 8, 16]
-                ])
-            | set([
+                }
+            | {
                 "intptr_t", "uintptr_t",
                 "intmax_t", "uintmax_t",
                 "size_t", "ptrdiff_t",
                 "uint", "ulong", "ushort", "uchar",
-                "half", "bool"])
-            | set(["int%d_t" % bc for bc in INT_BIT_COUNTS])
-            | set(["uint%d_t" % bc for bc in INT_BIT_COUNTS])
-            | set(["int_least%d_t" % bc for bc in INT_BIT_COUNTS])
-            | set(["uint_least%d_t" % bc for bc in INT_BIT_COUNTS])
-            | set(["int_fast%d_t" % bc for bc in INT_BIT_COUNTS])
-            | set(["uint_fast%d_t" % bc for bc in INT_BIT_COUNTS])
-            | set([
+                "half", "bool"}
+            | {"int%d_t" % bc for bc in INT_BIT_COUNTS}
+            | {"uint%d_t" % bc for bc in INT_BIT_COUNTS}
+            | {"int_least%d_t" % bc for bc in INT_BIT_COUNTS}
+            | {"uint_least%d_t" % bc for bc in INT_BIT_COUNTS}
+            | {"int_fast%d_t" % bc for bc in INT_BIT_COUNTS}
+            | {"uint_fast%d_t" % bc for bc in INT_BIT_COUNTS}
+            | {
                 "image1d_t", "image1d_array_t", "image1d_buffer_t",
                 "image2d_t", "image2d_array_t",
                 "image3d_t",
                 "sampler_t", "event_t"
-                ])
-            | set(["cfloat_t", "cdouble_t"])  # PyOpenCL extension
+                }
+            | {"cfloat_t", "cdouble_t"}  # PyOpenCL extension
             )
 
     def p_pp_directive(self, p):
