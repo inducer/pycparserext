@@ -1,3 +1,5 @@
+import copy
+
 from pycparser.c_generator import CGenerator as CGeneratorBaseBuggy
 from pycparserext.ext_c_parser import FuncDeclExt, TypeDeclExt
 import pycparser.c_ast as c_ast
@@ -38,6 +40,37 @@ class AsmAndAttributesMixin(object):
                 n.asm_keyword,
                 " : ".join(
                     self.visit(c) for c in components))
+
+    def _generate_struct_union_enum_ext(self, n, visitor):
+        if n.attributes:
+            # Adding __attribute__ at the end does not always work, so instead
+            # we change the name on a shallow copy so that the existing
+            # infrastructure just prints the attributes right before the name
+            # (as recommended by the GNU doc).
+            n = copy.copy(n)
+            n.name = (
+                '__attribute__((' + self.visit(n.attributes) + ')) ' +
+                (n.name or '')
+            )
+        return visitor(n)
+
+    def visit_StructExt(self, n, *args, **kwargs):
+        return self._generate_struct_union_enum_ext(n, self.visit_Struct)
+
+    def visit_UnionExt(self, n, *args, **kwargs):
+        return self._generate_struct_union_enum_ext(n, self.visit_Union)
+
+    def visit_EnumExt(self, n, *args, **kwargs):
+        return self._generate_struct_union_enum_ext(n, self.visit_Enum)
+
+    def visit_EnumeratorExt(self, n, *args, **kwargs):
+        if n.attributes:
+            n = copy.copy(n)
+            n.name = (
+                (n.name or '') +
+                ' __attribute__((' + self.visit(n.attributes) + ')) '
+            )
+        return super().visit_Enumerator(n)
 
     def _generate_type(self, n, modifiers=None, emit_declname=True):
         """ Recursive generation from a type node. n is the type node.

@@ -252,6 +252,38 @@ class FuncDeclExt(c_ast.Node):
 
     attr_names = ()
 
+
+class _StructUnionEnumMixin:
+    def __init__(self, *args, attributes=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.attributes = attributes
+
+    def children(self):
+        children = list(super().children())
+        if self.attributes:
+            children.append(("attributes", self.attributes))
+        return children
+
+    def __iter__(self):
+        yield from super().__iter__()
+        if self.attributes:
+            yield self.attributes
+
+
+class EnumExt(_StructUnionEnumMixin, c_ast.Enum):
+    pass
+
+
+class EnumeratorExt(_StructUnionEnumMixin, c_ast.Enumerator):
+    pass
+
+
+class StructExt(_StructUnionEnumMixin, c_ast.Struct):
+    pass
+
+
+class UnionExt(_StructUnionEnumMixin, c_ast.Union):
+    pass
 # }}}
 
 
@@ -479,6 +511,181 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
             coord=p[1].coord)
 
         p[0] = self._type_modify_decl(decl=p[1], modifier=func)
+
+    def _select_struct_union_class(self, token):
+        klass = super()._select_struct_union_class(token)
+        return {
+            c_ast.Struct: StructExt,
+            c_ast.Union: UnionExt,
+        }[klass]
+
+    def p_struct_or_union_specifier_with_attr_1(self, p):
+        """ struct_or_union_specifier   : struct_or_union ID brace_open brace_close attributes_opt
+                                        | struct_or_union TYPEID brace_open brace_close attributes_opt
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=p[2],
+            decls=[],
+            attributes=p[5],
+            coord=self._token_coord(p, 2))
+
+    def p_struct_or_union_specifier_with_attr_2(self, p):
+        """ struct_or_union_specifier   : struct_or_union attributes_opt ID brace_open brace_close
+                                        | struct_or_union attributes_opt TYPEID brace_open brace_close
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=p[3],
+            decls=[],
+            attributes=p[2],
+            coord=self._token_coord(p, 3))
+
+    def p_struct_or_union_specifier_with_attr_3(self, p):
+        """ struct_or_union_specifier   : attributes_opt struct_or_union ID brace_open brace_close
+                                        | attributes_opt struct_or_union TYPEID brace_open brace_close
+        """
+        klass = self._select_struct_union_class(p[2])
+        p[0] = klass(
+            name=p[3],
+            decls=[],
+            attributes=p[1],
+            coord=self._token_coord(p, 3))
+
+    def p_struct_or_union_specifier_with_attr_4(self, p):
+        """ struct_or_union_specifier   : struct_or_union ID brace_open struct_declaration_list brace_close attributes_opt
+                                        | struct_or_union TYPEID brace_open struct_declaration_list brace_close attributes_opt
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=p[2],
+            decls=p[4],
+            attributes=p[6],
+            coord=self._token_coord(p, 2))
+
+    def p_struct_or_union_specifier_with_attr_5(self, p):
+        """ struct_or_union_specifier   : struct_or_union attributes_opt ID brace_open struct_declaration_list brace_close
+                                        | struct_or_union attributes_opt TYPEID brace_open struct_declaration_list brace_close
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=p[3],
+            decls=p[5],
+            attributes=p[2],
+            coord=self._token_coord(p, 3))
+
+    def p_struct_or_union_specifier_with_attr_6(self, p):
+        """ struct_or_union_specifier   : attributes_opt struct_or_union ID brace_open struct_declaration_list brace_close
+                                        | attributes_opt struct_or_union TYPEID brace_open struct_declaration_list brace_close
+        """
+        klass = self._select_struct_union_class(p[2])
+        p[0] = klass(
+            name=p[3],
+            decls=p[5],
+            attributes=p[1],
+            coord=self._token_coord(p, 3))
+
+    def p_struct_or_union_specifier_with_attr_7(self, p):
+        """ struct_or_union_specifier   : struct_or_union attributes_opt ID
+                                        | struct_or_union attributes_opt TYPEID
+        """
+        klass = self._select_struct_union_class(p[1])
+        # None means no list of members
+        p[0] = klass(
+            name=p[3],
+            decls=None,
+            attributes=p[2],
+            coord=self._token_coord(p, 3))
+
+    def p_struct_or_union_specifier_with_attr_8(self, p):
+        """ struct_or_union_specifier   : struct_or_union brace_open brace_close attributes_opt
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=None,
+            decls=[],
+            attributes=p[4],
+            coord=self._token_coord(p, 2))
+
+    def p_struct_or_union_specifier_with_attr_9(self, p):
+        """ struct_or_union_specifier   : struct_or_union attributes_opt brace_open brace_close
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=None,
+            decls=[],
+            attributes=p[2],
+            coord=self._token_coord(p, 3))
+
+    def p_struct_or_union_specifier_with_attr_10(self, p):
+        """ struct_or_union_specifier   : struct_or_union brace_open struct_declaration_list brace_close attributes_opt
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=None,
+            decls=p[3],
+            attributes=p[5],
+            coord=self._token_coord(p, 2))
+
+    def p_struct_or_union_specifier_with_attr_11(self, p):
+        """ struct_or_union_specifier   : struct_or_union attributes_opt brace_open struct_declaration_list brace_close
+        """
+        klass = self._select_struct_union_class(p[1])
+        p[0] = klass(
+            name=None,
+            decls=p[4],
+            attributes=p[2],
+            coord=self._token_coord(p, 3))
+
+    def p_enum_specifier_with_attr_1(self, p):
+        """ enum_specifier  : ENUM attributes_opt ID
+                            | ENUM attributes_opt TYPEID
+        """
+        p[0] = EnumExt(p[3], None, self._token_coord(p, 1), attributes=p[2])
+
+    def p_enum_specifier_with_attr_2(self, p):
+        """ enum_specifier  : ENUM attributes_opt brace_open enumerator_list brace_close
+        """
+        p[0] = EnumExt(None, p[4], self._token_coord(p, 1), attributes=p[2])
+
+    def p_enum_specifier_with_attr_3(self, p):
+        """ enum_specifier  : ENUM brace_open enumerator_list brace_close attributes_opt
+        """
+        p[0] = EnumExt(None, p[3], self._token_coord(p, 1), attributes=p[5])
+
+    def p_enum_specifier_with_attr_4(self, p):
+        """ enum_specifier  : ENUM attributes_opt ID brace_open enumerator_list brace_close
+                            | ENUM attributes_opt TYPEID brace_open enumerator_list brace_close
+        """
+        p[0] = EnumExt(p[3], p[5], self._token_coord(p, 1), attributes=p[2])
+
+    def p_enum_specifier_with_attr_5(self, p):
+        """ enum_specifier  : ENUM ID brace_open enumerator_list brace_close attributes_opt
+                            | ENUM TYPEID brace_open enumerator_list brace_close attributes_opt
+        """
+        p[0] = EnumExt(p[2], p[4], self._token_coord(p, 1), attributes=p[6])
+
+    def p_enumerator(self, p):
+        """ enumerator  : ID
+                        | ID EQUALS constant_expression
+                        | ID attributes_opt
+                        | ID attributes_opt EQUALS constant_expression
+        """
+        if len(p) in (2, 4):
+            super().p_enumerator(p)
+        else:
+            if len(p) == 3:
+                enumerator = EnumeratorExt(
+                            p[1], None,
+                            self._token_coord(p, 1),
+                            attributes=p[2])
+            else:
+                enumerator = EnumeratorExt(
+                            p[1], p[4],
+                            self._token_coord(p, 1),
+                            attributes=p[2])
+            self._add_identifier(enumerator.name, enumerator.coord)
+            p[0] = enumerator
 
     # }}}
 # }}}
