@@ -189,7 +189,14 @@ class TypeDeclExt(c_ast.TypeDecl):
     @staticmethod
     def from_pycparser(td):
         assert isinstance(td, c_ast.TypeDecl)
-        return TypeDeclExt(td.declname, td.quals, td.type, td.coord)
+
+        return TypeDeclExt(
+            declname=td.declname,
+            quals=td.quals,
+            align=td.align,
+            type=td.type,
+            coord=td.coord
+        )
 
 
 class ArrayDeclExt(c_ast.ArrayDecl):
