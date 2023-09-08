@@ -386,10 +386,14 @@ def test_empty_struct_declaration_attr_2():
         typedef struct Foo {
         } __attribute__((packed)) Foo_t;
     """
+    src = """
+        typedef struct __attribute__((packed)) Foo {
+        } Foo_t;
+    """
 
     from pycparserext.ext_c_parser import GnuCParser
     p = GnuCParser()
-    ast = p.parse(src)
+    ast = p.parse(src, debuglevel=1)
     ast.show()
 
     from pycparserext.ext_c_generator import GnuCGenerator

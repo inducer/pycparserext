@@ -1,5 +1,7 @@
 from __future__ import division
 
+import itertools
+
 import pycparser.c_parser
 import pycparser.c_ast as c_ast
 try:
@@ -290,21 +292,40 @@ class UnionExt(_StructUnionEnumMixin, c_ast.Union):
 # {{{ attributes
 
 class _AttributesMixin(object):
+
+    def _merge_attributes(self, p, attrs):
+        print(999,attrs)
+        attrs = [
+            attr
+            for attr in attrs
+            if attr is not None
+        ]
+        if attrs:
+            fst, *others = attrs
+            fst.exprs.extend(itertools.chain.from_iterable(
+                attr.exprs
+                for attr in others
+            ))
+            return fst
+        else:
+            return c_ast.ExprList([], self._coord(p.lineno(1)))
+
     def p_attributes_opt_1(self, p):
         """ attributes_opt : attribute_decl attributes_opt
         """
-        p[1].exprs.extend(p[2].exprs)
-        p[0] = p[1]
+        print(991)
+        p[0] = self._merge_attributes(p, (p[1], p[2]))
 
     def p_attributes_opt_2(self, p):
         """ attributes_opt : empty
         """
-        p[0] = c_ast.ExprList([], self._coord(p.lineno(1)))
+        p[0] = self._merge_attributes(p, [])
 
     def p_attribute_decl(self, p):
         """ attribute_decl : __ATTRIBUTE__ LPAREN LPAREN attribute_list RPAREN RPAREN
                            | __ATTRIBUTE LPAREN LPAREN attribute_list RPAREN RPAREN
         """
+        print(992)
         p[0] = p[4]
 
     def p_attribute_list_1(self, p):
@@ -315,8 +336,7 @@ class _AttributesMixin(object):
     def p_attribute_list_2(self, p):
         """ attribute_list : attribute_list COMMA attribute
         """
-        p[1].exprs.append(p[3])
-        p[0] = p[1]
+        p[0] = self._merge_attributes(p, (p[1], p[3]))
 
     def p_attribute_1(self, p):
         """ attribute : CONST
@@ -331,6 +351,7 @@ class _AttributesMixin(object):
     def p_function_specifier_attr(self, p):
         """ function_specifier : attribute_decl
         """
+        print(993)
         p[0] = AttributeSpecifier(p[1])
 
 # }}}
@@ -421,6 +442,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     def p_xxx_declarator_1(self, p):
         """ xxx_declarator  : direct_xxx_declarator asm_label_opt attributes_opt
         """
+        print(555, p[3])
         if p[2] or p[3].exprs:
             if isinstance(p[1], (c_ast.ArrayDecl, c_ast.FuncDecl)):
                 decl_ext = to_decl_ext(p[1].type)
@@ -450,6 +472,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
                             | pointer attributes_opt direct_xxx_declarator \
                                 asm_label_opt
         """
+        print(666)
         if hasattr(p[4], "exprs"):
             attr_decl = p[4]
             asm_label = p[3]
@@ -490,6 +513,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
                                             LPAREN identifier_list_opt RPAREN \
                                             asm_label_opt attributes_opt
         """
+        print(777)
         func = FuncDeclExt(
             args=p[3],
             type=None,
@@ -503,6 +527,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
         """ direct_abstract_declarator  : direct_abstract_declarator \
                 LPAREN parameter_type_list_opt RPAREN asm_label_opt attributes_opt
         """
+        print(888)
         func = FuncDeclExt(
             args=p[3],
             type=None,
@@ -520,149 +545,92 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
         }[klass]
 
     def p_struct_or_union_specifier_with_attr_1(self, p):
-        """ struct_or_union_specifier   : struct_or_union ID brace_open brace_close attributes_opt
-                                        | struct_or_union TYPEID brace_open brace_close attributes_opt
+        """ struct_or_union_specifier   : struct_or_union attributes_opt ID brace_open brace_close attributes_opt
+                                        | struct_or_union attributes_opt TYPEID brace_open brace_close attributes_opt
         """
+        print(111)
         klass = self._select_struct_union_class(p[1])
-        p[0] = klass(
-            name=p[2],
-            decls=[],
-            attributes=p[5],
-            coord=self._token_coord(p, 2))
+        attrs = self._merge_attributes(p, (p[2], p[6]))
 
-    def p_struct_or_union_specifier_with_attr_2(self, p):
-        """ struct_or_union_specifier   : struct_or_union attributes_opt ID brace_open brace_close
-                                        | struct_or_union attributes_opt TYPEID brace_open brace_close
-        """
-        klass = self._select_struct_union_class(p[1])
         p[0] = klass(
             name=p[3],
             decls=[],
-            attributes=p[2],
+            attributes=attrs,
             coord=self._token_coord(p, 3))
-
-    def p_struct_or_union_specifier_with_attr_3(self, p):
-        """ struct_or_union_specifier   : attributes_opt struct_or_union ID brace_open brace_close
-                                        | attributes_opt struct_or_union TYPEID brace_open brace_close
-        """
-        klass = self._select_struct_union_class(p[2])
-        p[0] = klass(
-            name=p[3],
-            decls=[],
-            attributes=p[1],
-            coord=self._token_coord(p, 3))
-
-    def p_struct_or_union_specifier_with_attr_4(self, p):
-        """ struct_or_union_specifier   : struct_or_union ID brace_open struct_declaration_list brace_close attributes_opt
-                                        | struct_or_union TYPEID brace_open struct_declaration_list brace_close attributes_opt
-        """
-        klass = self._select_struct_union_class(p[1])
-        p[0] = klass(
-            name=p[2],
-            decls=p[4],
-            attributes=p[6],
-            coord=self._token_coord(p, 2))
 
     def p_struct_or_union_specifier_with_attr_5(self, p):
-        """ struct_or_union_specifier   : struct_or_union attributes_opt ID brace_open struct_declaration_list brace_close
-                                        | struct_or_union attributes_opt TYPEID brace_open struct_declaration_list brace_close
+        """ struct_or_union_specifier   : struct_or_union attributes_opt ID brace_open struct_declaration_list brace_close attributes_opt
+                                        | struct_or_union attributes_opt TYPEID brace_open struct_declaration_list brace_close attributes_opt
         """
+        print(222)
         klass = self._select_struct_union_class(p[1])
-        p[0] = klass(
-            name=p[3],
-            decls=p[5],
-            attributes=p[2],
-            coord=self._token_coord(p, 3))
+        attrs = self._merge_attributes(p, (p[2], p[7]))
 
-    def p_struct_or_union_specifier_with_attr_6(self, p):
-        """ struct_or_union_specifier   : attributes_opt struct_or_union ID brace_open struct_declaration_list brace_close
-                                        | attributes_opt struct_or_union TYPEID brace_open struct_declaration_list brace_close
-        """
-        klass = self._select_struct_union_class(p[2])
         p[0] = klass(
             name=p[3],
             decls=p[5],
-            attributes=p[1],
+            attributes=attrs,
             coord=self._token_coord(p, 3))
 
     def p_struct_or_union_specifier_with_attr_7(self, p):
-        """ struct_or_union_specifier   : struct_or_union attributes_opt ID
-                                        | struct_or_union attributes_opt TYPEID
+        """ struct_or_union_specifier   : struct_or_union attributes_opt ID attributes_opt
+                                        | struct_or_union attributes_opt TYPEID attributes_opt
         """
+        print(333)
         klass = self._select_struct_union_class(p[1])
+        attrs = self._merge_attributes(p, (p[2], p[4]))
+
         # None means no list of members
         p[0] = klass(
             name=p[3],
             decls=None,
-            attributes=p[2],
+            attributes=attrs,
             coord=self._token_coord(p, 3))
 
     def p_struct_or_union_specifier_with_attr_8(self, p):
-        """ struct_or_union_specifier   : struct_or_union brace_open brace_close attributes_opt
+        """ struct_or_union_specifier   : struct_or_union attributes_opt brace_open brace_close attributes_opt
         """
+        print(444)
         klass = self._select_struct_union_class(p[1])
+        attrs = self._merge_attributes(p, (p[2], p[5]))
+
         p[0] = klass(
             name=None,
             decls=[],
-            attributes=p[4],
-            coord=self._token_coord(p, 2))
-
-    def p_struct_or_union_specifier_with_attr_9(self, p):
-        """ struct_or_union_specifier   : struct_or_union attributes_opt brace_open brace_close
-        """
-        klass = self._select_struct_union_class(p[1])
-        p[0] = klass(
-            name=None,
-            decls=[],
-            attributes=p[2],
-            coord=self._token_coord(p, 3))
-
-    def p_struct_or_union_specifier_with_attr_10(self, p):
-        """ struct_or_union_specifier   : struct_or_union brace_open struct_declaration_list brace_close attributes_opt
-        """
-        klass = self._select_struct_union_class(p[1])
-        p[0] = klass(
-            name=None,
-            decls=p[3],
-            attributes=p[5],
-            coord=self._token_coord(p, 2))
-
-    def p_struct_or_union_specifier_with_attr_11(self, p):
-        """ struct_or_union_specifier   : struct_or_union attributes_opt brace_open struct_declaration_list brace_close
-        """
-        klass = self._select_struct_union_class(p[1])
-        p[0] = klass(
-            name=None,
-            decls=p[4],
-            attributes=p[2],
+            attributes=attrs,
             coord=self._token_coord(p, 3))
 
     def p_enum_specifier_with_attr_1(self, p):
         """ enum_specifier  : ENUM attributes_opt ID
                             | ENUM attributes_opt TYPEID
         """
+        print(991)
         p[0] = EnumExt(p[3], None, self._token_coord(p, 1), attributes=p[2])
 
     def p_enum_specifier_with_attr_2(self, p):
         """ enum_specifier  : ENUM attributes_opt brace_open enumerator_list brace_close
         """
+        print(992)
         p[0] = EnumExt(None, p[4], self._token_coord(p, 1), attributes=p[2])
 
     def p_enum_specifier_with_attr_3(self, p):
         """ enum_specifier  : ENUM brace_open enumerator_list brace_close attributes_opt
         """
+        print(993)
         p[0] = EnumExt(None, p[3], self._token_coord(p, 1), attributes=p[5])
 
     def p_enum_specifier_with_attr_4(self, p):
         """ enum_specifier  : ENUM attributes_opt ID brace_open enumerator_list brace_close
                             | ENUM attributes_opt TYPEID brace_open enumerator_list brace_close
         """
+        print(994)
         p[0] = EnumExt(p[3], p[5], self._token_coord(p, 1), attributes=p[2])
 
     def p_enum_specifier_with_attr_5(self, p):
         """ enum_specifier  : ENUM ID brace_open enumerator_list brace_close attributes_opt
                             | ENUM TYPEID brace_open enumerator_list brace_close attributes_opt
         """
+        print(995)
         p[0] = EnumExt(p[2], p[4], self._token_coord(p, 1), attributes=p[6])
 
     def p_enumerator(self, p):
@@ -671,6 +639,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
                         | ID attributes_opt
                         | ID attributes_opt EQUALS constant_expression
         """
+        print(996)
         if len(p) in (2, 4):
             super().p_enumerator(p)
         else:
