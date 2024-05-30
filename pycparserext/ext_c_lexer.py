@@ -65,7 +65,7 @@ _COMMON_KEYWORDS = [
     '__asm__', '__asm', 'asm']
 
 _GNU_KEYWORDS = [
-    '__typeof__', 'typeof',
+    '__typeof__', 'typeof', '__typeof',
     '__real__', '__imag__',
     '__builtin_types_compatible_p',
     '__const',
