@@ -509,7 +509,7 @@ def test_node_visitor():
         "Asm": [0, 1],
         # PreprocessorLine is OpenCL, not GNU
         "PreprocessorLine": [0, 0],
-        "TypeOfDeclaration": [0, 4],
+        "TypeOfDeclaration": [0, 6],
         "TypeOfExpression": [0, 1],
         "FuncDeclExt": [0, 1],
     }
@@ -548,6 +548,7 @@ def test_node_visitor():
         __typeof__(a) _a = __builtin_types_compatible_p(long char, short int);
         __typeof__ (__typeof__ (char *)[4]) y;
         typeof (typeof (char *)[4]) z;
+        __typeof (__typeof (char *)[4]) g;
         asm("rdtsc" : "=A" (val));
         __attribute__((unused)) static int c;
     }
@@ -569,9 +570,11 @@ def test_typeof_reproduction():
     int func(int a, int b) {
         __typeof__(a) _a = a;
         typeof(b) _b = b;
+        __typeof(c) _c = c;
 
         __typeof__ (__typeof__ (char *)[4]) y;
         typeof (typeof (char *)[4]) z;
+        __typeof (__typeof (char *)[4]) g;
     }
     """
     assert _round_trip_matches(src)
@@ -581,10 +584,12 @@ def test_typeof_reproduction():
 
     # key is type of visit, value is
     # [actual # __typeof__, expected # __typeof__,
-    #   actual # typeof, expected # typeof]
+    #   actual # typeof, expected # typeof,
+    #   actual # __typeof, expected # __typeof
+    # ]
     visits = {
-        "TypeOfDeclaration": [0, 2, 0, 2],
-        "TypeOfExpression": [0, 1, 0, 1],
+        "TypeOfDeclaration": [0, 2, 0, 4],
+        "TypeOfExpression": [0, 1, 0, 2],
     }
 
     class TestVisitor(NodeVisitor):
