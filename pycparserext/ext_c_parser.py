@@ -392,9 +392,11 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
         if p[2] or p[3].exprs:
             if isinstance(p[1], (c_ast.ArrayDecl, c_ast.FuncDecl)):
                 decl_ext = to_decl_ext(p[1].type)
+                p[1].type = decl_ext
 
             elif isinstance(p[1], c_ast.TypeDecl):
                 decl_ext = to_decl_ext(p[1])
+                p[1] = decl_ext
 
             else:
                 raise NotImplementedError(
@@ -406,8 +408,6 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
 
             if p[3].exprs:
                 decl_ext.attributes = p[3]
-
-            p[1] = decl_ext
 
         p[0] = p[1]
 
@@ -430,9 +430,11 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
         if asm_label or attr_decl.exprs:
             if isinstance(decl, (c_ast.ArrayDecl, c_ast.FuncDecl)):
                 decl_ext = to_decl_ext(decl.type)
+                decl.type = decl_ext
 
             elif isinstance(decl, c_ast.TypeDecl):
                 decl_ext = to_decl_ext(decl)
+                decl = decl_ext
 
             else:
                 raise NotImplementedError(
@@ -444,8 +446,6 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
 
             if attr_decl.exprs:
                 decl_ext.attributes = attr_decl
-
-            p[1] = decl_ext
 
         p[0] = self._type_modify_decl(decl, p[1])
 
