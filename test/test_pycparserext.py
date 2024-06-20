@@ -363,6 +363,174 @@ def test_empty_struct_declaration():
     print(GnuCGenerator().visit(ast))
 
 
+def test_empty_struct_declaration_attr_1():
+    src = """
+        typedef struct __attribute__((packed)) Foo {
+        } Foo_t;
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.type.attributes.exprs) == 1
+    assert ast.ext[0].type.type.attributes.exprs[0].name == "packed"
+
+
+def test_empty_struct_declaration_attr_2():
+    src = """
+        typedef struct Foo {
+        } __attribute__((packed)) Foo_t;
+    """
+    src = """
+        typedef struct __attribute__((packed)) Foo {
+        } Foo_t;
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src, debuglevel=1)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.type.attributes.exprs) == 1
+    assert ast.ext[0].type.type.attributes.exprs[0].name == "packed"
+
+
+def test_empty_struct_declaration_attr_3():
+    src = """
+        struct __attribute__((packed)) {
+        };
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.attributes.exprs) == 1
+    assert ast.ext[0].type.attributes.exprs[0].name == "packed"
+
+
+def test_empty_struct_declaration_attr_4():
+    src = """
+        struct {
+        } __attribute__((packed)) ;
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.attributes.exprs) == 1
+    assert ast.ext[0].type.attributes.exprs[0].name == "packed"
+
+
+def test_empty_struct_declaration_attr_5():
+    src = """
+        struct __attribute__((packed)) Foo;
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.attributes.exprs) == 1
+    assert ast.ext[0].type.attributes.exprs[0].name == "packed"
+
+
+def test_enum_declaration_attr_1():
+    src = """
+        enum __attribute__((deprecated)) Foo {CASE1};
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.attributes.exprs) == 1
+    assert ast.ext[0].type.attributes.exprs[0].name == "deprecated"
+
+
+def test_enum_declaration_attr_2():
+    src = """
+        enum Foo {CASE1} __attribute__((deprecated));
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    assert len(ast.ext[0].type.attributes.exprs) == 1
+    assert ast.ext[0].type.attributes.exprs[0].name == "deprecated"
+
+
+def test_enum_declaration_attr_3():
+    src = """
+        enum __attribute__((deprecated)) Foo {
+            CASE1,
+            CASE2 = 42,
+            CASE3 __attribute__((deprecated)),
+            CASE4 __attribute__((deprecated)) = 43,
+        };
+    """
+
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+    enum = ast.ext[0].type
+    assert len(enum.attributes.exprs) == 1
+    assert enum.attributes.exprs[0].name == "deprecated"
+
+    expected = [
+        ("CASE1", None, None),
+        ("CASE2", 42, None),
+        ("CASE3", None, ["deprecated"]),
+        ("CASE4", 43, ["deprecated"]),
+    ]
+
+    for value, (name, val, attrs) in zip(enum.values, expected):
+        assert value.name == name
+
+        if val is None:
+            assert value.value is None
+        else:
+            assert value.value.value == str(val)
+
+        if attrs:
+            assert [attr.name for attr in value.attributes] == attrs
+
+
 def test_nesty_c_declarator():
     src = """
     struct a {
