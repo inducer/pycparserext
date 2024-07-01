@@ -1,23 +1,24 @@
-from pycparser.c_generator import CGenerator as CGeneratorBaseBuggy
-from pycparserext.ext_c_parser import FuncDeclExt, TypeDeclExt
 import pycparser.c_ast as c_ast
+from pycparser.c_generator import CGenerator as CGeneratorBaseBuggy
+
+from pycparserext.ext_c_parser import FuncDeclExt, TypeDeclExt
 
 
 class CGeneratorBase(CGeneratorBaseBuggy):
     # bug fix
     def visit_UnaryOp(self, n):
         operand = self._parenthesize_unless_simple(n.expr)
-        if n.op == 'p++':
-            return '%s++' % operand
-        elif n.op == 'p--':
-            return '%s--' % operand
-        elif n.op == 'sizeof':
+        if n.op == "p++":
+            return "%s++" % operand
+        elif n.op == "p--":
+            return "%s--" % operand
+        elif n.op == "sizeof":
             # Always parenthesize the argument of sizeof since it can be
             # a name.
-            return 'sizeof(%s)' % self.visit(n.expr)
+            return "sizeof(%s)" % self.visit(n.expr)
         else:
             # avoid merging of "- - x" or "__real__varname"
-            return '%s %s' % (n.op, operand)
+            return "%s %s" % (n.op, operand)
 
 
 class AsmAndAttributesMixin(object):
@@ -48,15 +49,15 @@ class AsmAndAttributesMixin(object):
         if modifiers is None:
             modifiers = []
         typ = type(n)
-        #~ print(n, modifiers)
+        # print(n, modifiers)
 
         if typ in (c_ast.TypeDecl, TypeDeclExt):
-            s = ''
+            s = ""
             if n.quals:
-                s += ' '.join(n.quals) + ' '
+                s += " ".join(n.quals) + " "
             s += self.visit(n.type)
 
-            nstr = n.declname if n.declname and emit_declname else ''
+            nstr = n.declname if n.declname and emit_declname else ""
             # Resolve modifiers.
             # Wrap in parens to distinguish pointer to array and pointer to
             # function syntax.
@@ -64,48 +65,48 @@ class AsmAndAttributesMixin(object):
             for i, modifier in enumerate(modifiers):
                 if isinstance(modifier, c_ast.ArrayDecl):
                     if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
-                        nstr = '(' + nstr + ')'
+                        nstr = "(" + nstr + ")"
 
                     # BUG FIX: pycparser ignores quals
-                    dim_quals = (' '.join(modifier.dim_quals) + ' '
-                                 if modifier.dim_quals else '')
+                    dim_quals = (" ".join(modifier.dim_quals) + " "
+                                 if modifier.dim_quals else "")
 
-                    nstr += '[' + dim_quals + self.visit(modifier.dim) + ']'
+                    nstr += "[" + dim_quals + self.visit(modifier.dim) + "]"
 
                 elif isinstance(modifier, c_ast.FuncDecl):
                     if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
-                        nstr = '(' + nstr + ')'
-                    nstr += '(' + self.visit(modifier.args) + ')'
+                        nstr = "(" + nstr + ")"
+                    nstr += "(" + self.visit(modifier.args) + ")"
 
                 elif isinstance(modifier, FuncDeclExt):
                     if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
-                        nstr = '(' + nstr + ')'
-                    nstr += '(' + self.visit(modifier.args) + ')'
+                        nstr = "(" + nstr + ")"
+                    nstr += "(" + self.visit(modifier.args) + ")"
 
                     if modifier.asm is not None:
                         nstr += " " + self.visit(modifier.asm)
 
                     if modifier.attributes.exprs:
                         nstr += (
-                                ' __attribute__(('
+                                " __attribute__(("
                                 + self.visit(modifier.attributes)
-                                + '))')
+                                + "))")
 
                 elif isinstance(modifier, c_ast.PtrDecl):
                     # BUG FIX: pycparser ignores quals
-                    quals = ' '.join(modifier.quals)
+                    quals = " ".join(modifier.quals)
                     if quals:
-                        quals = quals + ' '
-                    nstr = '*' + quals + nstr
+                        quals = quals + " "
+                    nstr = "*" + quals + nstr
 
             if hasattr(n, "asm") and n.asm:
                 nstr += self.visit(n.asm)
 
             if hasattr(n, "attributes") and n.attributes.exprs:
-                nstr += ' __attribute__((' + self.visit(n.attributes) + '))'
+                nstr += " __attribute__((" + self.visit(n.attributes) + "))"
 
             if nstr:
-                s += ' ' + nstr
+                s += " " + nstr
             return s
 
         elif typ == c_ast.Decl:
@@ -115,7 +116,7 @@ class AsmAndAttributesMixin(object):
             return self._generate_type(n.type, emit_declname=emit_declname)
 
         elif typ == c_ast.IdentifierType:
-            return ' '.join(n.names) + ' '
+            return " ".join(n.names) + " "
 
         elif typ in (c_ast.ArrayDecl, c_ast.PtrDecl, c_ast.FuncDecl, FuncDeclExt):
             return self._generate_type(
@@ -127,7 +128,7 @@ class AsmAndAttributesMixin(object):
     def _generate_decl(self, n):
         """ Generation from a Decl node.
         """
-        s = ''
+        s = ""
 
         def funcspec_to_str(i):
             if isinstance(i, c_ast.Node):
@@ -136,14 +137,14 @@ class AsmAndAttributesMixin(object):
                 return i
 
         if n.funcspec:
-            s = ' '.join(funcspec_to_str(i) for i in n.funcspec) + ' '
+            s = " ".join(funcspec_to_str(i) for i in n.funcspec) + " "
         if n.storage:
-            s += ' '.join(n.storage) + ' '
+            s += " ".join(n.storage) + " "
         s += self._generate_type(n.type)
         return s
 
     def visit_AttributeSpecifier(self, n):
-        return ' __attribute__((' + self.visit(n.exprlist) + '))'
+        return " __attribute__((" + self.visit(n.exprlist) + "))"
 
 
 class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
@@ -154,10 +155,10 @@ class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
         return "%s(%s)" % (n.typeof_keyword, self.visit(n.expr))
 
     def visit_TypeList(self, n):
-        return ', '.join(self.visit(ch) for ch in n.types)
+        return ", ".join(self.visit(ch) for ch in n.types)
 
     def visit_RangeExpression(self, n):
-        return '%s ... %s' % (self.visit(n.first), self.visit(n.last))
+        return "%s ... %s" % (self.visit(n.first), self.visit(n.last))
 
 
 class GNUCGenerator(GnuCGenerator):
@@ -169,13 +170,13 @@ class GNUCGenerator(GnuCGenerator):
 
 class OpenCLCGenerator(AsmAndAttributesMixin, CGeneratorBase):
     def visit_FileAST(self, n):
-        s = ''
+        s = ""
         from pycparserext.ext_c_parser import PreprocessorLine
         for ext in n.ext:
             if isinstance(ext, (c_ast.FuncDef, PreprocessorLine)):
                 s += self.visit(ext)
             else:
-                s += self.visit(ext) + ';\n'
+                s += self.visit(ext) + ";\n"
         return s
 
     def visit_PreprocessorLine(self, n):

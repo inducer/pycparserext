@@ -11,11 +11,11 @@ Python 3:
     reports:
       junit: test/pytest.xml
 
-Flake8:
+Ruff:
   script:
-  - curl -L -O https://gitlab.tiker.net/inducer/ci-support/raw/main/prepare-and-run-flake8.sh
-  - ". ./prepare-and-run-flake8.sh pycparserext test"
+  - pipx install ruff
+  - ruff check
   tags:
-  - python3
+  - docker-runner
   except:
   - tags
