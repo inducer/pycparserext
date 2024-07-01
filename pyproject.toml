@@ -1,0 +1,43 @@
+[tool.ruff]
+target-version = "py38"
+line-length = 85
+
+preview = true
+[tool.ruff.lint]
+extend-select = [
+    "B",   # flake8-bugbear
+    "C",   # flake8-comprehensions
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # flake8-isort
+    "N",   # pep8-naming
+    "NPY", # numpy
+    "Q",   # flake8-quotes
+    "W",   # pycodestyle
+]
+extend-ignore = [
+    "C90",  # McCabe complexity
+    "E221", # multiple spaces before operator
+    "E226", # missing whitespace around arithmetic operator
+    "E402", # module-level import not at top of file
+]
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.per-file-ignores]
+"pycparserext/ext_c_generator.py" = ["N802"]
+"test/test_pycparserext.py" = ["N802"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+known-first-party = [
+    "pycparser",
+]
+known-local-folder = [
+    "pycparserext",
+]
+lines-after-imports = 2
+

@@ -10,19 +10,16 @@ on:
         - cron:  '17 3 * * 0'
 
 jobs:
-    flake8:
-        name: Flake8
+    ruff:
+        name: Ruff
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
-        -
-            uses: actions/setup-python@v5
-            with:
-                python-version: '3.8'
+        -   uses: actions/setup-python@v5
         -   name: "Main Script"
             run: |
-                curl -L -O https://gitlab.tiker.net/inducer/ci-support/raw/main/prepare-and-run-flake8.sh
-                . ./prepare-and-run-flake8.sh ./pycparserext ./test
+                pip install ruff
+                ruff check
 
     pytest:
         name: Pytest on Py${{ matrix.python-version }}

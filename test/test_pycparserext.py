@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import pytest
 
 
@@ -24,8 +25,8 @@ def _compare_asts(first, second):
 
 
 def _round_trip_matches(src):
-    from pycparserext.ext_c_parser import GnuCParser
     from pycparserext.ext_c_generator import GnuCGenerator
+    from pycparserext.ext_c_parser import GnuCParser
 
     p = GnuCParser()
 
@@ -405,8 +406,8 @@ def test_pointer_reproduction():
         return 0;
     }
     """
-    import pycparserext.ext_c_parser as ext_c_parser
     import pycparserext.ext_c_generator as ext_c_generator
+    import pycparserext.ext_c_parser as ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src)
@@ -424,8 +425,8 @@ def test_no_added_attr():
         return 0;
     }
     """
-    import pycparserext.ext_c_parser as ext_c_parser
     import pycparserext.ext_c_generator as ext_c_generator
+    import pycparserext.ext_c_parser as ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src)
@@ -442,8 +443,8 @@ def test_double_pointer():
 
     void func_with_p2pp(const char *, Error **);
     """
-    import pycparserext.ext_c_parser as ext_c_parser
     import pycparserext.ext_c_generator as ext_c_generator
+    import pycparserext.ext_c_parser as ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src)
@@ -579,8 +580,9 @@ def test_typeof_reproduction():
     """
     assert _round_trip_matches(src)
 
-    import pycparserext.ext_c_parser as ext_c_parser
     from pycparser.c_ast import NodeVisitor
+
+    import pycparserext.ext_c_parser as ext_c_parser
 
     # key is type of visit, value is
     # [actual # __typeof__, expected # __typeof__,
@@ -618,8 +620,9 @@ def test_typeof_reproduction():
 
 def test_typedef():
     from pycparser import c_ast
-    from pycparserext.ext_c_parser import GnuCParser
+
     from pycparserext.ext_c_generator import GnuCGenerator
+    from pycparserext.ext_c_parser import GnuCParser
 
     p = GnuCParser()
 

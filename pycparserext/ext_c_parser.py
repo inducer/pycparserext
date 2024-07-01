@@ -1,7 +1,9 @@
 from __future__ import division
 
-import pycparser.c_parser
 import pycparser.c_ast as c_ast
+import pycparser.c_parser
+
+
 try:
     import pycparser.ply.yacc as yacc
 except ImportError:
@@ -11,12 +13,12 @@ from pycparser.plyparser import parameterized, template
 
 class CParserBase(pycparser.c_parser.CParser):
     def __init__(self, **kwds):
-        kwds['lexer'] = self.lexer_class
-        kwds['lextab'] = 'pycparserext.lextab'
-        kwds['yacctab'] = 'pycparserext.yacctab'
+        kwds["lexer"] = self.lexer_class
+        kwds["lextab"] = "pycparserext.lextab"
+        kwds["yacctab"] = "pycparserext.yacctab"
         pycparser.c_parser.CParser.__init__(self, **kwds)
 
-    def parse(self, text, filename='', debuglevel=0,
+    def parse(self, text, filename="", debuglevel=0,
             initial_type_symbols=frozenset()):
         self.clex.filename = filename
         self.clex.reset_lineno()
@@ -103,7 +105,7 @@ class Asm(c_ast.Node):
         if self.clobbered_regs is not None:
             yield self.clobbered_regs
 
-    attr_names = ('asm_keyword',)
+    attr_names = ("asm_keyword",)
 
 
 class PreprocessorLine(c_ast.Node):
@@ -139,7 +141,7 @@ class TypeOfDeclaration(c_ast.Node):
         if self.declaration is not None:
             yield self.declaration
 
-    attr_names = ('typeof_keyword',)
+    attr_names = ("typeof_keyword",)
 
 
 class TypeOfExpression(c_ast.Node):
@@ -158,7 +160,7 @@ class TypeOfExpression(c_ast.Node):
         if self.expr is not None:
             yield self.expr
 
-    attr_names = ('typeof_keyword',)
+    attr_names = ("typeof_keyword",)
 
 
 class RangeExpression(c_ast.Node):
@@ -350,7 +352,7 @@ class _AsmMixin(object):
         """
         p[0] = p[1]
         if p[2]:
-            p[0] += ' ' + p[2]
+            p[0] += " " + p[2]
 
     def p_asm_volatile_opt(self, p):
         """ asm_volatile_opt : unified_volatile
@@ -386,7 +388,7 @@ class _AsmMixin(object):
 class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
     # {{{ /!\ names must match C parser to override
 
-    @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
+    @parameterized(("id", "ID"), ("typeid", "TYPEID"), ("typeid_noparen", "TYPEID"))
     def p_xxx_declarator_1(self, p):
         """ xxx_declarator  : direct_xxx_declarator asm_label_opt attributes_opt
         """
@@ -412,7 +414,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
 
         p[0] = p[1]
 
-    @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
+    @parameterized(("id", "ID"), ("typeid", "TYPEID"), ("typeid_noparen", "TYPEID"))
     def p_xxx_declarator_2(self, p):
         """ xxx_declarator  : pointer direct_xxx_declarator asm_label_opt \
                                 attributes_opt
@@ -450,7 +452,7 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
 
         p[0] = self._type_modify_decl(decl, p[1])
 
-    @parameterized(('id', 'ID'), ('typeid', 'TYPEID'), ('typeid_noparen', 'TYPEID'))
+    @parameterized(("id", "ID"), ("typeid", "TYPEID"), ("typeid_noparen", "TYPEID"))
     def p_direct_xxx_declarator_6(self, p):
         """ direct_xxx_declarator   : direct_xxx_declarator \
                                             LPAREN parameter_type_list RPAREN \
@@ -603,8 +605,8 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
             {
                 "%s%d" % (base_name, count)
                 for base_name in [
-                    'char', 'uchar', 'short', 'ushort', 'int', 'uint',
-                    'long', 'ulong', 'float', 'double', 'half']
+                    "char", "uchar", "short", "ushort", "int", "uint",
+                    "long", "ulong", "float", "double", "half"]
                 for count in [2, 3, 4, 8, 16]
                 }
             | {
