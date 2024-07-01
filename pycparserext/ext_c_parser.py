@@ -23,9 +23,10 @@ class CParserBase(pycparser.c_parser.CParser):
 
         # _scope_stack[-1] is the current (topmost) scope.
 
-        initial_scope = {tpsym: 1 for tpsym in initial_type_symbols}
+        initial_scope = dict.fromkeys(initial_type_symbols, 1)
         initial_scope.update(
-                {tpsym: 1 for tpsym in self.initial_type_symbols})
+                dict.fromkeys(self.initial_type_symbols, 1)
+                )
         self._scope_stack = [initial_scope]
 
         if not text or text.isspace():
