@@ -550,7 +550,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def p_gnu_primary_expression_6(self, p):
         """ primary_expression : gnu_statement_expression """
         p[0] = p[1]
-        
+
     def p_gnu_unary_expression(self, p):
         """ unary_expression : __ALIGNOF__ LPAREN type_name RPAREN
         """
