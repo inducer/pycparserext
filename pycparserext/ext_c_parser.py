@@ -448,6 +448,13 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
             if attr_decl.exprs:
                 decl_ext.attributes = attr_decl
 
+            if isinstance(p[1], c_ast.PtrDecl):
+                ptr = p[1]
+                while isinstance(ptr.type, c_ast.PtrDecl):
+                    ptr = ptr.type
+                ptr.type = decl
+                decl = p[1]
+
             p[1] = decl_ext
 
         p[0] = self._type_modify_decl(decl, p[1])
