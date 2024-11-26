@@ -1,18 +1,55 @@
-[tool.ruff]
-target-version = "py38"
-line-length = 85
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[project]
+name = "pycparserext"
+version = "2024.1"
+description = "Extensions for pycparser"
+readme = "README.rst"
+license = "MIT"
+requires-python = "~=3.8"
+authors = [
+    { name = "Andreas Kloeckner", email = "inform@tiker.net" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "ply>=3.4",
+    "pycparser~=2.21",
+]
+
+[project.urls]
+Homepage = "https://github.com/inducer/pycparserext"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pycparserext",
+]
+[tool.ruff]
 preview = true
+
 [tool.ruff.lint]
 extend-select = [
     "B",   # flake8-bugbear
     "C",   # flake8-comprehensions
     "E",   # pycodestyle
     "F",   # pyflakes
+    "G",   # flake8-logging-format
     "I",   # flake8-isort
     "N",   # pep8-naming
     "NPY", # numpy
     "Q",   # flake8-quotes
+    "UP",  # pyupgrade
+    "RUF", # ruff
     "W",   # pycodestyle
 ]
 extend-ignore = [
@@ -20,15 +57,19 @@ extend-ignore = [
     "E221", # multiple spaces before operator
     "E226", # missing whitespace around arithmetic operator
     "E402", # module-level import not at top of file
+    "UP006", # updated annotations due to __future__ import
+    "UP007", # updated annotations due to __future__ import
+    "UP031", # use f-strings instead of %
+    "UP032", # use f-strings instead of .format
 ]
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "double"
 multiline-quotes = "double"
 
-[tool.ruff.lint.per-file-ignores]
-"pycparserext/ext_c_generator.py" = ["N802"]
-"test/test_pycparserext.py" = ["N802"]
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = ["visit_*", "t_*"]
+
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
@@ -40,4 +81,3 @@ known-local-folder = [
     "pycparserext",
 ]
 lines-after-imports = 2
-
