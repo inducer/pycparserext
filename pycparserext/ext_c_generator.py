@@ -21,7 +21,7 @@ class CGeneratorBase(CGeneratorBaseBuggy):
             return "%s %s" % (n.op, operand)
 
 
-class AsmAndAttributesMixin(object):
+class AsmAndAttributesMixin:
     def visit_Asm(self, n):
         components = [
                 n.template,
@@ -120,7 +120,7 @@ class AsmAndAttributesMixin(object):
 
         elif typ in (c_ast.ArrayDecl, c_ast.PtrDecl, c_ast.FuncDecl, FuncDeclExt):
             return self._generate_type(
-                    n.type, modifiers + [n], emit_declname=emit_declname)
+                    n.type, [*modifiers, n], emit_declname=emit_declname)
 
         else:
             return self.visit(n)
