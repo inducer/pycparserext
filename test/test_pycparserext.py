@@ -126,6 +126,12 @@ def test_asm_label():
     assert _round_trip_matches(src)
 
 
+def test_pointer_with_attr():
+    # https://github.com/inducer/pycparserext/issues/86
+    src = "typedef float * __attribute__((abc)) b;"
+    assert _round_trip_matches(src)
+
+
 def test_funky_header_code():
     src = """
         extern __inline int __attribute__ ((__nothrow__)) __signbitf (float __x)
