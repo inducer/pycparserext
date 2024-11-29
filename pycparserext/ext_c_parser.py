@@ -549,6 +549,14 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         """ primary_expression : gnu_statement_expression """
         p[0] = p[1]
 
+    def p_gnu_unary_expression(self, p):
+        """ unary_expression : __ALIGNOF__ LPAREN type_name RPAREN
+        """
+        p[0] = c_ast.UnaryOp(
+            p[1],
+            p[2] if len(p) == 3 else p[3],
+            self._token_coord(p, 1))
+
     def p_statement(self, p):
         """ statement   : labeled_statement
                         | expression_statement
