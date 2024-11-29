@@ -354,6 +354,19 @@ def test_lvalue_gnu_statement_expression():
     print(GnuCGenerator().visit(ast))
 
 
+def test_gnu_extension_expression():
+    src = """
+      int func(int a) {
+        int i = (4,__extension__ 2);
+        char * name = __extension__ __PRETTY_FUNCTION__;
+        i = __extension__ i++;
+        i = __extension__((__extension__ i)++ + (--(__extension__ i)));
+        return __extension__(int)__extension__({; ; i;});
+     }
+    """
+    assert _round_trip_matches(src)
+
+
 def test_empty_struct_declaration():
     src = """
         typedef struct Foo {
