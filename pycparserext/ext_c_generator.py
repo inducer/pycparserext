@@ -160,6 +160,9 @@ class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
     def visit_RangeExpression(self, n):
         return "%s ... %s" % (self.visit(n.first), self.visit(n.last))
 
+    def visit_CompoundExpression(self, n):
+        return "(%s)" % (self.visit(n.stmt))
+
 
 class GNUCGenerator(GnuCGenerator):
     def __init__(self):
