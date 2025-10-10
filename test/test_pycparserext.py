@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 import pytest
 
@@ -123,6 +122,12 @@ def test_asm_label():
         static int var asm("renamed_var") = 5;
     }
     """
+    assert _round_trip_matches(src)
+
+
+def test_pointer_with_attr():
+    # https://github.com/inducer/pycparserext/issues/86
+    src = "typedef float * __attribute__((abc)) b;"
     assert _round_trip_matches(src)
 
 

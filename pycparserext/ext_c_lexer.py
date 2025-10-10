@@ -16,7 +16,7 @@ class GnuCLexer(CLexerBase):
             + CLexerBase.exponent_part+"))i?[FfLl]?)")
 
     @TOKEN(floating_constant)
-    def t_FLOAT_CONST(self, t):  # noqa: N802
+    def t_FLOAT_CONST(self, t):
         return t
 
     t_pppragma_ignore = " \t<>.-{}();+-*/$%@&^~!?:,0123456789="
@@ -32,7 +32,7 @@ class GNUCLexer(GnuCLexer):
 
 
 class OpenCLCLexer(CLexerBase):
-    tokens = CLexerBase.tokens + ("LINECOMMENT",)
+    tokens = (*CLexerBase.tokens, "LINECOMMENT")
     states = (
             # ('comment', 'exclusive'),
             # ('preproc', 'exclusive'),
@@ -40,12 +40,12 @@ class OpenCLCLexer(CLexerBase):
             ("pppragma", "exclusive"),  # unused
             )
 
-    def t_LINECOMMENT(self, t):  # noqa: N802
+    def t_LINECOMMENT(self, t):
         r"\/\/([^\n]+)\n"
         t.lexer.lineno += t.value.count("\n")
 
     # overrides pycparser, must have same name
-    def t_PPHASH(self, t):  # noqa: N802
+    def t_PPHASH(self, t):
         r"[ \t]*\#([^\n]|\\\n)+[^\n\\]\n"
         t.lexer.lineno += t.value.count("\n")
         return t

@@ -1,4 +1,3 @@
-from __future__ import division
 
 import pycparser.c_ast as c_ast
 import pycparser.c_parser
@@ -51,8 +50,7 @@ class TypeList(c_ast.Node):
         return tuple(nodelist)
 
     def __iter__(self):
-        for child in (self.types or []):
-            yield child
+        yield from (self.types or [])
 
     attr_names = ()
 
@@ -260,7 +258,7 @@ class FuncDeclExt(c_ast.Node):
 
 # {{{ attributes
 
-class _AttributesMixin(object):
+class _AttributesMixin:
     def p_attributes_opt_1(self, p):
         """ attributes_opt : attribute_decl attributes_opt
         """
@@ -309,7 +307,7 @@ class _AttributesMixin(object):
 
 # {{{ asm
 
-class _AsmMixin(object):
+class _AsmMixin:
     def p_asm_opt_1(self, p):
         """ asm_opt : empty
         """
@@ -494,7 +492,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
     from pycparserext.ext_c_lexer import GnuCLexer as lexer_class  # noqa
 
-    initial_type_symbols = {"__builtin_va_list"}
+    initial_type_symbols = frozenset({"__builtin_va_list"})
 
     def p_function_specifier_gnu(self, p):
         """ function_specifier  : __INLINE
@@ -608,7 +606,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
     from pycparserext.ext_c_lexer import OpenCLCLexer as lexer_class  # noqa
 
-    INT_BIT_COUNTS = [8, 16, 32, 64]
+    INT_BIT_COUNTS = (8, 16, 32, 64)
     initial_type_symbols = (
             {
                 "%s%d" % (base_name, count)
