@@ -16,6 +16,8 @@ class CGeneratorBase(CGeneratorBaseBuggy):
             # Always parenthesize the argument of sizeof since it can be
             # a name.
             return "sizeof(%s)" % self.visit(n.expr)
+        elif n.op == "__alignof__":
+            return "__alignof__(%s)" % self.visit(n.expr)
         else:
             # avoid merging of "- - x" or "__real__varname"
             return "%s %s" % (n.op, operand)
