@@ -571,6 +571,11 @@ def test_node_visitor():
         assert visit_num[0] == visit_num[1], assert_msg
 
 
+def test_alignof():
+    src = "int x = __alignof__(int);"
+    assert _round_trip_matches(src)
+
+
 def test_typeof_reproduction():
     src = """
     int func(int a, int b) {
