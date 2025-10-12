@@ -306,6 +306,23 @@ def test_array_ptr_decl_attribute():
     print(GnuCGenerator().visit(ast))
 
 
+def test_array_attribute():
+    src = """
+    int arr[2] __attribute__((deprecated));
+    """
+
+    from pycparser.c_ast import ArrayDecl
+    from pycparserext.ext_c_parser import GnuCParser
+    p = GnuCParser()
+    ast = p.parse(src)
+    ast.show()
+
+    assert isinstance(ast.ext[0].type, ArrayDecl)
+
+    from pycparserext.ext_c_generator import GnuCGenerator
+    print(GnuCGenerator().visit(ast))
+
+
 def test_gnu_statement_expression():
     src = """
       int func(int a) {
