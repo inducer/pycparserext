@@ -433,11 +433,12 @@ class _AsmAndAttributesMixin(_AsmMixin, _AttributesMixin):
             while not isinstance(innermost_decl, c_ast.TypeDecl):
                 try:
                     innermost_decl = innermost_decl.type
-                except AttributeError:
+                except AttributeError as err:
                     raise NotImplementedError(
-                            "cannot attach asm or attributes to "
-                            "nodes of type '%s'"
-                            % type(innermost_decl))
+                        "cannot attach asm or attributes to "
+                        "nodes of type '%s'"
+                        % type(innermost_decl)
+                    ) from err
 
             decl_ext = to_decl_ext(innermost_decl)
 
@@ -554,14 +555,6 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def p_gnu_primary_expression_6(self, p):
         """ primary_expression : gnu_statement_expression """
         p[0] = p[1]
-
-    def p_gnu_unary_expression(self, p):
-        """ unary_expression : __ALIGNOF__ LPAREN type_name RPAREN
-        """
-        p[0] = c_ast.UnaryOp(
-            p[1],
-            p[2] if len(p) == 3 else p[3],
-            self._token_coord(p, 1))
 
     def p_gnu_unary_expression(self, p):
         """ unary_expression : __ALIGNOF__ LPAREN type_name RPAREN
