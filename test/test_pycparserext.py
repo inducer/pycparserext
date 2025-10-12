@@ -576,6 +576,11 @@ def test_alignof():
     assert _round_trip_matches(src)
 
 
+def test_alignof_in_attribute():
+    src = "long long z __attribute__((aligned(__alignof__(long long))));"
+    assert _round_trip_matches(src)
+
+
 def test_typeof_reproduction():
     src = """
     int func(int a, int b) {
