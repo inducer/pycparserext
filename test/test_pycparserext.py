@@ -649,6 +649,12 @@ def test_typedef():
     assert gen == "int"
 
 
+def test_pointer_to_function_with_attribute():
+    # https://github.com/inducer/pycparserext/issues/66
+    src = "void (*f)(void) __attribute__((unused));"
+    assert _round_trip_matches(src)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
