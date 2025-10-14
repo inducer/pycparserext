@@ -216,6 +216,18 @@ class ArrayDeclExt(c_ast.ArrayDecl):
         )
 
 
+class StructExt(c_ast.Struct):
+    """Extended Struct that can hold attributes."""
+    @staticmethod
+    def from_pycparser(st):
+        assert isinstance(st, c_ast.Struct)
+        return StructExt(
+            name=st.name,
+            decls=st.decls,
+            coord=st.coord
+        )
+
+
 def to_decl_ext(d):
     if isinstance(d, c_ast.TypeDecl):
         return TypeDeclExt.from_pycparser(d)
@@ -589,6 +601,44 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         """ struct_declaration_list : empty """
         p[0] = None
 
+    # Support attributes on anonymous struct/union declarations
+    # e.g., struct { int a; } __attribute__((packed));
+    def p_struct_declaration_anonymous_with_attr(self, p):
+        """ struct_declaration : specifier_qualifier_list attributes_opt SEMI
+        """
+        spec = p[1]
+        attr_decl = p[2]
+        assert "typedef" not in spec["storage"]
+
+        # Anonymous struct/union with attributes
+        if len(spec["type"]) == 1:
+            node = spec["type"][0]
+            if isinstance(node, c_ast.Node):
+                decl_type = node
+
+                # If we have attributes and this is a Struct/Union, attach them
+                if attr_decl and attr_decl.exprs and isinstance(node, c_ast.Struct):
+                    # Convert to StructExt and attach attributes
+                    if not isinstance(node, StructExt):
+                        struct_ext = StructExt.from_pycparser(node)
+                        struct_ext.attrib = AttributeSpecifier(attr_decl)
+                        decl_type = struct_ext
+                    else:
+                        node.attrib = AttributeSpecifier(attr_decl)
+            else:
+                decl_type = c_ast.IdentifierType(node)
+
+            decls = self._build_declarations(
+                spec=spec,
+                decls=[{"decl": decl_type}])
+        else:
+            # Structure/union members can have the same names as typedefs
+            decls = self._build_declarations(
+                spec=spec,
+                decls=[{"decl": None, "init": None}])
+
+        p[0] = decls
+
     def p_range_designator(self, p):
         """ designator  : LBRACKET constant_expression \
                             ELLIPSIS constant_expression RBRACKET
@@ -611,6 +661,70 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
                              | __VOLATILE__
         """
         p[0] = p[1]
+
+    # Support attributes on struct/union types
+    # struct __attribute__((packed)) { int a; };
+    def p_struct_or_union_specifier_with_attr_1(self, p):
+        """struct_or_union_specifier  : struct_or_union attributes_opt \
+                brace_open struct_declaration_list brace_close
+                                      | struct_or_union attributes_opt \
+                brace_open brace_close
+        """
+        klass = self._select_struct_union_class(p[1])
+        attr_decl = p[2]
+
+        if len(p) == 5:
+            # Empty struct/union
+            struct = klass(
+                name=None,
+                decls=[],
+                coord=self._token_coord(p, 1))
+        else:
+            struct = klass(
+                name=None,
+                decls=p[4],
+                coord=self._token_coord(p, 1))
+
+        # Attach attributes if present
+        if attr_decl and attr_decl.exprs:
+            struct_ext = StructExt.from_pycparser(struct)
+            struct_ext.attrib = AttributeSpecifier(attr_decl)
+            p[0] = struct_ext
+        else:
+            p[0] = struct
+
+    def p_struct_or_union_specifier_with_attr_2(self, p):
+        """struct_or_union_specifier  : struct_or_union ID attributes_opt \
+                brace_open struct_declaration_list brace_close
+                                      | struct_or_union ID attributes_opt \
+                brace_open brace_close
+                                      | struct_or_union TYPEID \
+                attributes_opt brace_open struct_declaration_list brace_close
+                                      | struct_or_union TYPEID \
+                attributes_opt brace_open brace_close
+        """
+        klass = self._select_struct_union_class(p[1])
+        attr_decl = p[3]
+
+        if len(p) == 6:
+            # Empty struct/union with name
+            struct = klass(
+                name=p[2],
+                decls=[],
+                coord=self._token_coord(p, 2))
+        else:
+            struct = klass(
+                name=p[2],
+                decls=p[5],
+                coord=self._token_coord(p, 2))
+
+        # Attach attributes if present
+        if attr_decl and attr_decl.exprs:
+            struct_ext = StructExt.from_pycparser(struct)
+            struct_ext.attrib = AttributeSpecifier(attr_decl)
+            p[0] = struct_ext
+        else:
+            p[0] = struct
 # }}}
 
 
