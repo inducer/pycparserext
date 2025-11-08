@@ -126,8 +126,9 @@ def test_asm_label():
 
 
 def test_register_asm_label():
-    from pycparserext.ext_c_parser import GnuCParser, TypeDeclExt
     from pycparser import c_ast
+
+    from pycparserext.ext_c_parser import GnuCParser, TypeDeclExt
     src = 'register int my_var asm("my_reg");'
     p = GnuCParser()
     ast = p.parse(src)
@@ -135,12 +136,12 @@ def test_register_asm_label():
     assert isinstance(decl, c_ast.Decl)
 
     # The asm attribute should be on the TypeDeclExt, not the Decl
-    assert not hasattr(decl, 'asm')
+    assert not hasattr(decl, "asm")
 
     # The declarator part of the Decl should be a TypeDeclExt
     # with the asm attribute.
     assert isinstance(decl.type, TypeDeclExt)
-    assert hasattr(decl.type, 'asm')
+    assert hasattr(decl.type, "asm")
     assert decl.type.asm is not None
     assert decl.type.asm.template.value == '"my_reg"'
 

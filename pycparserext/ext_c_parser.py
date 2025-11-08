@@ -187,7 +187,7 @@ class RangeExpression(c_ast.Node):
 # These are the same as pycparser's, but it does *not* declare __slots__--
 # so we can poke in attributes at our leisure.
 class TypeDeclExt(c_ast.TypeDecl):
-    __slots__ = ('asm', 'attributes', 'init')
+    __slots__ = ("asm", "attributes", "init")
 
     @staticmethod
     def from_pycparser(td):
@@ -203,7 +203,7 @@ class TypeDeclExt(c_ast.TypeDecl):
 
 
 class ArrayDeclExt(c_ast.ArrayDecl):
-    __slots__ = ('asm', 'attributes', 'init')
+    __slots__ = ("asm", "attributes", "init")
 
     @staticmethod
     def from_pycparser(ad):
