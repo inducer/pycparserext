@@ -144,6 +144,17 @@ def test_register_asm_label():
     assert decl.type.asm is not None
     assert decl.type.asm.template.value == '"my_reg"'
 
+    # Test round-trip: the main issue in #33 was that no C code was generated
+    assert _round_trip_matches(src)
+
+    # Test with __asm__ variant
+    src2 = 'register int foo __asm__("bar");'
+    assert _round_trip_matches(src2)
+
+    # Test with different types
+    src3 = 'register unsigned int counter asm("r0");'
+    assert _round_trip_matches(src3)
+
 
 def test_pointer_with_attr():
     # https://github.com/inducer/pycparserext/issues/86
