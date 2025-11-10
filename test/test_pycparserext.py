@@ -125,6 +125,38 @@ def test_asm_label():
     assert _round_trip_matches(src)
 
 
+def test_register_asm_label():
+    from pycparser import c_ast
+
+    from pycparserext.ext_c_parser import GnuCParser, TypeDeclExt
+    src = 'register int my_var asm("my_reg");'
+    p = GnuCParser()
+    ast = p.parse(src)
+    decl = ast.ext[0]
+    assert isinstance(decl, c_ast.Decl)
+
+    # The asm attribute should be on the TypeDeclExt, not the Decl
+    assert not hasattr(decl, "asm")
+
+    # The declarator part of the Decl should be a TypeDeclExt
+    # with the asm attribute.
+    assert isinstance(decl.type, TypeDeclExt)
+    assert hasattr(decl.type, "asm")
+    assert decl.type.asm is not None
+    assert decl.type.asm.template.value == '"my_reg"'
+
+    # Test round-trip: the main issue in #33 was that no C code was generated
+    assert _round_trip_matches(src)
+
+    # Test with __asm__ variant
+    src2 = 'register int foo __asm__("bar");'
+    assert _round_trip_matches(src2)
+
+    # Test with different types
+    src3 = 'register unsigned int counter asm("r0");'
+    assert _round_trip_matches(src3)
+
+
 def test_pointer_with_attr():
     # https://github.com/inducer/pycparserext/issues/86
     src = "typedef float * __attribute__((abc)) b;"
