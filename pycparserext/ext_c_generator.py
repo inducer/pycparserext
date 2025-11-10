@@ -162,6 +162,18 @@ class GnuCGenerator(AsmAndAttributesMixin, CGeneratorBase):
     def visit_RangeExpression(self, n):
         return "%s ... %s" % (self.visit(n.first), self.visit(n.last))
 
+    def visit_Struct(self, n):
+        """Generate code for struct, handling attributes if present."""
+        s = self._generate_struct_union_enum(n, "struct")
+        # If this is a StructExt with attributes, add them
+        if hasattr(n, "attrib") and n.attrib:
+            s += " " + self.visit(n.attrib)
+        return s
+
+    def visit_StructExt(self, n):
+        """Generate code for StructExt with attributes."""
+        return self.visit_Struct(n)
+
 
 class GNUCGenerator(GnuCGenerator):
     def __init__(self):

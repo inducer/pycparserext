@@ -687,6 +687,74 @@ def test_pointer_to_function_with_attribute():
     assert _round_trip_matches(src)
 
 
+def test_packed_anonymous_struct_in_struct():
+    from pycparser import c_ast
+
+    from pycparserext.ext_c_parser import GnuCParser
+    parser = GnuCParser()
+    code = """
+    struct foo_t {
+        struct __attribute__((packed)) {
+            int a;
+            char b;
+        };
+    };
+    """
+    ast = parser.parse(code)
+    assert isinstance(ast, c_ast.FileAST)
+    assert len(ast.ext) == 1
+    decl = ast.ext[0]
+    assert isinstance(decl, c_ast.Decl)
+    struct_foo = decl.type
+    assert isinstance(struct_foo, c_ast.Struct)
+    assert struct_foo.name == "foo_t"
+    assert len(struct_foo.decls) == 1
+    anon_struct_decl = struct_foo.decls[0]
+    assert isinstance(anon_struct_decl, c_ast.Decl)
+    anon_struct = anon_struct_decl.type
+    assert isinstance(anon_struct, c_ast.Struct)
+    assert anon_struct.name is None
+    assert hasattr(anon_struct, "attrib")
+    assert anon_struct.attrib is not None
+
+    # Verify round-trip code generation
+    assert _round_trip_matches(code)
+
+
+def test_packed_anonymous_struct_in_struct_after():
+    from pycparser import c_ast
+
+    from pycparserext.ext_c_parser import GnuCParser
+    parser = GnuCParser()
+    code = """
+    struct foo_t {
+        struct {
+            int a;
+            char b;
+        } __attribute__((packed));
+    };
+    """
+    ast = parser.parse(code)
+    assert isinstance(ast, c_ast.FileAST)
+    assert len(ast.ext) == 1
+    decl = ast.ext[0]
+    assert isinstance(decl, c_ast.Decl)
+    struct_foo = decl.type
+    assert isinstance(struct_foo, c_ast.Struct)
+    assert struct_foo.name == "foo_t"
+    assert len(struct_foo.decls) == 1
+    anon_struct_decl = struct_foo.decls[0]
+    assert isinstance(anon_struct_decl, c_ast.Decl)
+    anon_struct = anon_struct_decl.type
+    assert isinstance(anon_struct, c_ast.Struct)
+    assert anon_struct.name is None
+    assert hasattr(anon_struct, "attrib")
+    assert anon_struct.attrib is not None
+
+    # Verify round-trip code generation
+    assert _round_trip_matches(code)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
