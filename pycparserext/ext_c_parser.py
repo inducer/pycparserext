@@ -1,4 +1,3 @@
-
 import pycparser.c_ast as c_ast
 import pycparser.c_parser
 
@@ -59,6 +58,39 @@ class AttributeSpecifier(c_ast.Node):
     def __init__(self, exprlist):
         self.exprlist = exprlist
 
+    def __eq__(self, other):
+        if not isinstance(other, AttributeSpecifier):
+            return False
+        # Recursively compare the exprlist nodes
+        return self._compare_ast_nodes(self.exprlist, other.exprlist)
+
+    def _compare_ast_nodes(self, node1, node2):
+        """Recursively compare two AST nodes for structural equality."""
+        if type(node1) is not type(node2):
+            return False
+
+        # Compare attributes
+        if hasattr(node1, "attr_names"):
+            for attr in node1.attr_names:
+                val1 = getattr(node1, attr)
+                val2 = getattr(node2, attr)
+                if val1 != val2:
+                    return False
+
+        # Compare children
+        if hasattr(node1, "children"):
+            children1 = node1.children()
+            children2 = node2.children()
+            if len(children1) != len(children2):
+                return False
+            for (name1, child1), (name2, child2) in zip(children1, children2):
+                if name1 != name2:
+                    return False
+                if not self._compare_ast_nodes(child1, child2):
+                    return False
+
+        return True
+
     def children(self):
         return [("exprlist", self.exprlist)]
 
@@ -69,6 +101,32 @@ class AttributeSpecifier(c_ast.Node):
         yield
 
     attr_names = ()
+
+
+class DeclExt(c_ast.Decl):
+    @staticmethod
+    def from_pycparser(decl):
+        assert isinstance(decl, c_ast.Decl)
+        new_decl = DeclExt(
+            name=decl.name,
+            quals=decl.quals,
+            align=decl.align,
+            storage=decl.storage,
+            funcspec=decl.funcspec,
+            type=decl.type,
+            init=decl.init,
+            bitsize=decl.bitsize,
+            coord=decl.coord,
+        )
+        if hasattr(decl, "attributes"):
+            new_decl.attributes = decl.attributes
+        return new_decl
+
+    def children(self):
+        nodelist = super().children()
+        if hasattr(self, "attributes"):
+            nodelist = (*nodelist, ("attributes", self.attributes))
+        return nodelist
 
 
 class Asm(c_ast.Node):
@@ -579,6 +637,33 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
             p[1],
             p[2] if len(p) == 3 else p[3],
             self._token_coord(p, 1))
+
+    def p_specifier_qualifier_list_fs(self, p):
+        """ specifier_qualifier_list : function_specifier specifier_qualifier_list
+        """
+        self._p_specifier_qualifier_list_left_recursion(p)
+
+    def _p_specifier_qualifier_list_left_recursion(self, p):
+        # The PLY documentation says that left-recursive rules are supported,
+        # but it keeps complaining about reduce/reduce conflicts.
+        #
+        # See `_p_specifier_qualifier_list_right_recursion` for a non-complaining
+        # version.
+        spec = p[1]
+        spec_dict = p[2]
+
+        if isinstance(spec, AttributeSpecifier):
+            spec_dict["function"].append(spec)
+        elif isinstance(spec, str):
+            spec_dict["qual"].append(spec)
+        elif isinstance(spec, c_ast.Node):
+            if "type" not in spec_dict:
+                spec_dict["type"] = []
+            spec_dict["type"].append(spec)
+        else:
+            raise TypeError(f"Unknown specifier {spec!r} of type {type(spec)}")
+
+        p[0] = spec_dict
 
     def p_statement(self, p):
         """ statement   : labeled_statement
