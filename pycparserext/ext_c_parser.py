@@ -103,32 +103,6 @@ class AttributeSpecifier(c_ast.Node):
     attr_names = ()
 
 
-class DeclExt(c_ast.Decl):
-    @staticmethod
-    def from_pycparser(decl):
-        assert isinstance(decl, c_ast.Decl)
-        new_decl = DeclExt(
-            name=decl.name,
-            quals=decl.quals,
-            align=decl.align,
-            storage=decl.storage,
-            funcspec=decl.funcspec,
-            type=decl.type,
-            init=decl.init,
-            bitsize=decl.bitsize,
-            coord=decl.coord,
-        )
-        if hasattr(decl, "attributes"):
-            new_decl.attributes = decl.attributes
-        return new_decl
-
-    def children(self):
-        nodelist = super().children()
-        if hasattr(self, "attributes"):
-            nodelist = (*nodelist, ("attributes", self.attributes))
-        return nodelist
-
-
 class Asm(c_ast.Node):
     def __init__(self, asm_keyword, template, output_operands,
             input_operands, clobbered_regs, coord=None):
