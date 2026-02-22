@@ -1,11 +1,11 @@
-import pycparser.c_ast as c_ast
 import pycparser.c_parser
+from pycparser import c_ast
 
 
 try:
-    import pycparser.ply.yacc as yacc
+    from pycparser.ply import yacc
 except ImportError:
-    import ply.yacc as yacc  # noqa: F401
+    from ply import yacc  # noqa: F401
 from pycparser.plyparser import parameterized, template
 
 

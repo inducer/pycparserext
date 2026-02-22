@@ -37,6 +37,10 @@ include = [
 [tool.ruff]
 preview = true
 
+[tool.ruff.lint.per-file-ignores]
+"test/*.py" = ["S102"]
+"doc/conf.py" = ["S102"]
+
 [tool.ruff.lint]
 extend-select = [
     "B",   # flake8-bugbear
