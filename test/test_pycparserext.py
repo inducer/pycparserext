@@ -443,8 +443,7 @@ def test_pointer_reproduction():
         return 0;
     }
     """
-    import pycparserext.ext_c_generator as ext_c_generator
-    import pycparserext.ext_c_parser as ext_c_parser
+    from pycparserext import ext_c_generator, ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src)
@@ -462,8 +461,7 @@ def test_no_added_attr():
         return 0;
     }
     """
-    import pycparserext.ext_c_generator as ext_c_generator
-    import pycparserext.ext_c_parser as ext_c_parser
+    from pycparserext import ext_c_generator, ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src)
@@ -480,8 +478,7 @@ def test_double_pointer():
 
     void func_with_p2pp(const char *, Error **);
     """
-    import pycparserext.ext_c_generator as ext_c_generator
-    import pycparserext.ext_c_parser as ext_c_parser
+    from pycparserext import ext_c_generator, ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src)
@@ -591,7 +588,7 @@ def test_node_visitor():
         __attribute__((unused)) static int c;
     }
     """
-    import pycparserext.ext_c_parser as ext_c_parser
+    from pycparserext import ext_c_parser
 
     parser = ext_c_parser.GnuCParser()
     ast = parser.parse(src_gnu)
@@ -629,7 +626,7 @@ def test_typeof_reproduction():
 
     from pycparser.c_ast import NodeVisitor
 
-    import pycparserext.ext_c_parser as ext_c_parser
+    from pycparserext import ext_c_parser
 
     # key is type of visit, value is
     # [actual # __typeof__, expected # __typeof__,
