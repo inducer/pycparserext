@@ -6,7 +6,6 @@ from pycparser.c_parser import (
     _STORAGE_CLASS,
     _TYPE_QUALIFIER,
     _TYPE_SPEC_SIMPLE,
-    _TokenStream,
 )
 
 
@@ -50,7 +49,8 @@ class AttributeSpecifier(c_ast.Node):
             children2 = node2.children()
             if len(children1) != len(children2):
                 return False
-            for (name1, child1), (name2, child2) in zip(children1, children2):
+            for (name1, child1), (name2, child2) in zip(
+                                children1, children2, strict=False):
                 if name1 != name2:
                     return False
                 if not self._compare_ast_nodes(child1, child2):
@@ -542,14 +542,13 @@ class _AsmAndAttributesMixin:
             coord=base_decl.coord,
         )
 
-        if self._peek_type() == "LBRACE":
-            if func.args is not None:
-                for param in func.args.params:
-                    if isinstance(param, c_ast.EllipsisParam):
-                        break
-                    name = getattr(param, "name", None)
-                    if name:
-                        self._add_identifier(name, param.coord)
+        if self._peek_type() == "LBRACE" and func.args is not None:
+            for param in func.args.params:
+                if isinstance(param, c_ast.EllipsisParam):
+                    break
+                name = getattr(param, "name", None)
+                if name:
+                    self._add_identifier(name, param.coord)
 
         return func
 
@@ -659,12 +658,12 @@ class _AsmAndAttributesMixin:
                 decl_type = c_ast.IdentifierType(node)
             self._expect("SEMI")
             return self._build_declarations(
-                spec=spec, decls=[dict(decl=decl_type, init=None, bitsize=None)]
+                spec=spec, decls=[{"decl": decl_type, "init": None, "bitsize": None}]
             )
 
         self._expect("SEMI")
         return self._build_declarations(
-            spec=spec, decls=[dict(decl=None, init=None, bitsize=None)]
+            spec=spec, decls=[{"decl": None, "init": None, "bitsize": None}]
         )
 
 # }}}
@@ -941,15 +940,15 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
     def _parse_type_qualifier_list(self):
         quals = []
-        _all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS
-        while self._peek_type() in _all_quals:
+        all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS
+        while self._peek_type() in all_quals:
             quals.append(self._advance().value)
         return quals
 
     def _parse_array_decl_common(self, base_type, coord=None):
         """Override to handle GNU type qualifiers inside array dimensions."""
         from pycparser.c_parser import _TYPE_QUALIFIER
-        _all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS
+        all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS
 
         lbrack_tok = self._expect("LBRACKET")
         if coord is None:
@@ -966,10 +965,10 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
             self._expect("RBRACKET")
             return make_array_decl(dim, dim_quals)
 
-        if self._peek_type() in _all_quals:
+        if self._peek_type() in all_quals:
             dim_quals = self._parse_type_qualifier_list() or []
             if self._accept("STATIC"):
-                dim_quals = dim_quals + ["static"]
+                dim_quals = [*dim_quals, "static"]
                 dim = self._parse_assignment_expression()
                 self._expect("RBRACKET")
                 return make_array_decl(dim, dim_quals)
@@ -1355,8 +1354,8 @@ class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
 
     def _parse_type_qualifier_list(self):
         quals = []
-        _all_quals = _TYPE_QUALIFIER | _OCL_TYPE_QUALIFIERS
-        while self._peek_type() in _all_quals:
+        all_quals = _TYPE_QUALIFIER | _OCL_TYPE_QUALIFIERS
+        while self._peek_type() in all_quals:
             quals.append(self._advance().value)
         return quals
 

@@ -49,7 +49,7 @@ _OCL_EXTRA_KEYWORDS = {
 class GnuCLexer(CLexerBase):
     """GNU C lexer that recognizes GNU-specific keywords."""
 
-    _extra_keywords = {**_COMMON_EXTRA_KEYWORDS, **_GNU_EXTRA_KEYWORDS}
+    _extra_keywords = {**_COMMON_EXTRA_KEYWORDS, **_GNU_EXTRA_KEYWORDS}  # noqa: RUF012
 
     def token(self):
         tok = super().token()
@@ -72,7 +72,7 @@ class OpenCLCLexer(CLexerBase):
     """OpenCL C lexer that recognizes OpenCL-specific keywords and line
     comments."""
 
-    _extra_keywords = {**_COMMON_EXTRA_KEYWORDS, **_OCL_EXTRA_KEYWORDS}
+    _extra_keywords = {**_COMMON_EXTRA_KEYWORDS, **_OCL_EXTRA_KEYWORDS}  # noqa: RUF012
 
     def token(self):
         tok = super().token()
