@@ -495,7 +495,7 @@ class _AsmAndAttributesMixin:
                 except AttributeError:
                     break
 
-            if isinstance(innermost_decl, (c_ast.TypeDecl, c_ast.ArrayDecl)):
+            if isinstance(innermost_decl, c_ast.TypeDecl):
                 decl_ext = to_decl_ext(innermost_decl)
                 if asm_label:
                     decl_ext.asm = asm_label
