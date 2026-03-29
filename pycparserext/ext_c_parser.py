@@ -349,7 +349,7 @@ class CParserBase(pycparser.c_parser.CParser):
 
     def _parse_attributes_opt(self):
         tok = self._peek()
-        coord = self._tok_coord(tok) if tok else self.clex.filename
+        coord = self._tok_coord(tok) if tok else None
         result = c_ast.ExprList([], coord)
         while self._peek_type() in {"__ATTRIBUTE__", "__ATTRIBUTE"}:
             attr_list = self._parse_attribute_decl()
@@ -1085,12 +1085,13 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
         return super()._parse_labeled_statement()
 
     def _parse_designator(self):
-        if self._accept("LBRACKET"):
+        lbrack_tok = self._accept("LBRACKET")
+        if lbrack_tok is not None:
             expr = self._parse_constant_expression()
             if self._accept("ELLIPSIS"):
                 last = self._parse_constant_expression()
                 self._expect("RBRACKET")
-                return RangeExpression(expr, last)
+                return RangeExpression(expr, last, coord=self._tok_coord(lbrack_tok))
             self._expect("RBRACKET")
             return expr
         if self._accept("PERIOD"):
