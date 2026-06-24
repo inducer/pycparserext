@@ -413,8 +413,9 @@ class CParserBase(pycparser.c_parser.CParser):
 _GNU_FUNCTION_SPECS = frozenset({"__INLINE__", "__INLINE"})
 _GNU_TYPE_QUALIFIERS = frozenset({
     "__CONST", "__RESTRICT__", "__RESTRICT",
-    "__EXTENSION__", "__VOLATILE", "__VOLATILE__",
+    "__VOLATILE", "__VOLATILE__",
 })
+_GNU_EXPR_QUALIFIERS = frozenset({"__EXTENSION__"})
 _TYPEOF_TOKENS = frozenset({"__TYPEOF__", "TYPEOF", "__TYPEOF"})
 _ATTRIBUTE_TOKENS = frozenset({"__ATTRIBUTE__", "__ATTRIBUTE"})
 
@@ -444,7 +445,7 @@ class _AsmAndAttributesMixin:
         saw_paren = False
         while self._accept("TIMES"):
             # Skip standard and GNU type qualifiers after '*'
-            while self._peek_type() in (_TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS):
+            while self._peek_type() in (_TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS | _GNU_EXPR_QUALIFIERS):
                 self._advance()
             # Skip __attribute__((...)) between '*' and declarator name
             while self._peek_type() in _ATTRIBUTE_TOKENS:
@@ -704,6 +705,7 @@ _GNU_DECL_START = (
     _DECL_START
     | _GNU_FUNCTION_SPECS
     | _GNU_TYPE_QUALIFIERS
+    | _GNU_EXPR_QUALIFIERS
     | _TYPEOF_TOKENS
     | _ATTRIBUTE_TOKENS
 )
@@ -759,6 +761,12 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
                     first_coord = self._tok_coord(tok)
                 spec = self._add_declaration_specifier(
                     spec, self._advance().value, "qual", append=True)
+                continue
+
+            if tok_type in _GNU_EXPR_QUALIFIERS:
+                if first_coord is None:
+                    first_coord = self._tok_coord(tok)
+                self._advance()
                 continue
 
             if tok_type in _STORAGE_CLASS:
@@ -894,6 +902,12 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
                     spec, self._advance().value, "qual", append=True)
                 continue
 
+            if tok_type in _GNU_EXPR_QUALIFIERS:
+                if first_coord is None:
+                    first_coord = self._tok_coord(tok)
+                self._advance()
+                continue
+
             if tok_type in _GNU_FUNCTION_SPECS:
                 if first_coord is None:
                     first_coord = self._tok_coord(tok)
@@ -969,7 +983,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
 
     def _parse_type_qualifier_list(self):
         quals = []
-        all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS
+        all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS | _GNU_EXPR_QUALIFIERS
         while self._peek_type() in all_quals:
             quals.append(self._advance().value)
         return quals
@@ -977,7 +991,7 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
     def _parse_array_decl_common(self, base_type, coord=None):
         """Override to handle GNU type qualifiers inside array dimensions."""
         from pycparser.c_parser import _TYPE_QUALIFIER
-        all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS
+        all_quals = _TYPE_QUALIFIER | _GNU_TYPE_QUALIFIERS | _GNU_EXPR_QUALIFIERS
 
         lbrack_tok = self._expect("LBRACKET")
         if coord is None:

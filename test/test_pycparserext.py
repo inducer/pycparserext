@@ -520,6 +520,18 @@ def test_case_ranges():
     assert _round_trip_matches(src)
 
 
+def test_extension():
+    src = """
+    __extension__ typedef unsigned long long uint64_t;
+    """
+
+    from pycparserext import ext_c_generator, ext_c_parser
+    parser = ext_c_parser.GnuCParser()
+    ast = parser.parse(src)
+    gen = ext_c_generator.GnuCGenerator()
+    assert(src.strip().removeprefix('__extension__').strip() == gen.visit(ast).strip())
+
+
 @pytest.mark.parametrize("restrict_kw", ["restrict", "__restrict__", "__restrict"])
 def test_restrict(restrict_kw):
     src = """

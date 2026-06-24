@@ -1,4 +1,5 @@
 build
+test
 .*.sw[po]
 .sw[po]
 *~
