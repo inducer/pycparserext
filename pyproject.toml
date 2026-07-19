@@ -37,8 +37,8 @@ include = [
 preview = true
 
 [tool.ruff.lint.per-file-ignores]
-"test/*.py" = ["S102"]
-"doc/conf.py" = ["S102"]
+"test/*.py" = ["exec-builtin"]
+"doc/conf.py" = ["exec-builtin"]
 
 [tool.ruff.lint]
 extend-select = [
@@ -57,13 +57,13 @@ extend-select = [
 ]
 extend-ignore = [
     "C90",  # McCabe complexity
-    "E221", # multiple spaces before operator
-    "E226", # missing whitespace around arithmetic operator
-    "E402", # module-level import not at top of file
-    "UP006", # updated annotations due to __future__ import
-    "UP007", # updated annotations due to __future__ import
-    "UP031", # use f-strings instead of %
-    "UP032", # use f-strings instead of .format
+    "multiple-spaces-before-operator",
+    "missing-whitespace-around-arithmetic-operator",
+    "module-import-not-at-top-of-file",
+    "non-pep585-annotation",
+    "non-pep604-annotation-union",
+    "printf-string-formatting",
+    "f-string",
 ]
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
