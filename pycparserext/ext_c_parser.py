@@ -710,7 +710,9 @@ _GNU_DECL_START = (
 
 
 class GnuCParser(_AsmAndAttributesMixin, CParserBase):
-    from pycparserext.ext_c_lexer import GnuCLexer as lexer_class  # noqa
+    from pycparserext.ext_c_lexer import (
+        GnuCLexer as lexer_class,  # ruff:ignore[camelcase-imported-as-lowercase]
+    )
 
     initial_type_symbols = frozenset({"__builtin_va_list"})
 
@@ -1124,7 +1126,9 @@ _OCL_DECL_START = (
 
 
 class OpenCLCParser(_AsmAndAttributesMixin, CParserBase):
-    from pycparserext.ext_c_lexer import OpenCLCLexer as lexer_class  # noqa
+    from pycparserext.ext_c_lexer import (
+        OpenCLCLexer as lexer_class,  # ruff:ignore[camelcase-imported-as-lowercase]
+    )
 
     INT_BIT_COUNTS = (8, 16, 32, 64)
     initial_type_symbols = (
