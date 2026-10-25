@@ -762,6 +762,55 @@ def test_attribute_in_struct():
     assert _round_trip_matches(src)
 
 
+@pytest.mark.parametrize("dialect", ["GnuC", "OpenCLC"])
+@pytest.mark.parametrize("suffix", [";", " {}"])
+def test_function_declaration_type(dialect, suffix):
+    from pycparser import c_ast
+
+    from pycparserext import ext_c_generator, ext_c_parser
+
+    parser = getattr(ext_c_parser, dialect + "Parser")()
+    generator = getattr(ext_c_generator, dialect + "Generator")()
+    ast = parser.parse("unsigned long f(void)" + suffix)
+    decl = ast.ext[0]
+    if isinstance(decl, c_ast.FuncDef):
+        decl = decl.decl
+
+    assert decl.name == "f"
+    assert isinstance(decl.type, c_ast.FuncDecl)
+    assert decl.type.type.type.names == ["unsigned", "long"]
+    generated = generator.visit(ast)
+    assert "unsigned long f(void)" in generated
+    assert _compare_asts(ast, parser.parse(generated))
+
+
+@pytest.mark.parametrize("dialect", ["GnuC", "OpenCLC"])
+def test_adjacent_asm_separators(dialect):
+    from pycparserext import ext_c_generator, ext_c_parser
+
+    parser = getattr(ext_c_parser, dialect + "Parser")()
+    generator = getattr(ext_c_generator, dialect + "Generator")()
+    ast = parser.parse('void f(void) { asm("" ::: "memory"); }')
+    asm = ast.ext[0].body.block_items[0]
+    assert asm.output_operands is None
+    assert asm.input_operands is None
+    assert asm.clobbered_regs.exprs[0].value == '"memory"'
+    assert _compare_asts(ast, parser.parse(generator.visit(ast)))
+
+
+def test_array_designator_generation():
+    src = "int a[] = { [0 ... 9] = 1, [10] = 2 };"
+    from pycparserext.ext_c_generator import GnuCGenerator
+    from pycparserext.ext_c_parser import GnuCParser
+
+    parser = GnuCParser()
+    ast = parser.parse(src)
+    generated = GnuCGenerator().visit(ast)
+    assert "[0 ... 9] = 1" in generated
+    assert "[10] = 2" in generated
+    assert _compare_asts(ast, parser.parse(generated))
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
