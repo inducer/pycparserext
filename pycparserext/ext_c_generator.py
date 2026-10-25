@@ -75,7 +75,8 @@ class AsmAndAttributesMixin:
 
                     nstr += "[" + dim_quals + self.visit(modifier.dim) + "]"
 
-                elif isinstance(modifier, c_ast.FuncDecl):
+                elif (isinstance(modifier, c_ast.FuncDecl)
+                        and not isinstance(modifier, FuncDeclExt)):
                     if i != 0 and isinstance(modifiers[i - 1], c_ast.PtrDecl):
                         nstr = "(" + nstr + ")"
                     nstr += "(" + self.visit(modifier.args) + ")"
@@ -104,8 +105,11 @@ class AsmAndAttributesMixin:
             if hasattr(n, "asm") and n.asm:
                 nstr += self.visit(n.asm)
 
-            if hasattr(n, "attributes") and n.attributes.exprs:
-                nstr += " __attribute__((" + self.visit(n.attributes) + "))"
+            if isinstance(n, TypeDeclExt):
+                if n.attributes.exprs:
+                    nstr += " __attribute__((" + self.visit(n.attributes) + "))"
+            elif getattr(n, "attributes", None):
+                nstr += " " + self._generate_attributes(n.attributes)
 
             if nstr:
                 s += " " + nstr

@@ -257,7 +257,7 @@ def to_decl_ext(d):
         raise TypeError("unexpected decl type: %s" % type(d).__name__)
 
 
-class FuncDeclExt(c_ast.Node):
+class FuncDeclExt(c_ast.FuncDecl):
     def __init__(self, args, type, attributes, asm, coord=None):
         self.args = args
         self.type = type
@@ -316,6 +316,25 @@ class CParserBase(pycparser.c_parser.CParser):
             self._scope_stack[0].update(self._pending_initial_type_symbols)
             del self._pending_initial_type_symbols
         return super()._parse_translation_unit_or_empty()
+
+    def _add_declaration_specifier(self, declspec, newspec, kind, append=True):
+        # Unlike pycparser, our function specifiers can be AttributeSpecifier
+        # nodes. Keep this extension's layout independent of upstream's helper,
+        # which no longer accepts append or non-string function specifiers.
+        if declspec is None:
+            declspec = {
+                "qual": [],
+                "storage": [],
+                "type": [],
+                "function": [],
+                "alignment": [],
+                "type_attributes": [],
+            }
+        if append:
+            declspec[kind].append(newspec)
+        else:
+            declspec[kind].insert(0, newspec)
+        return declspec
 
     def _parse_attribute_list(self):
         exprs = [self._parse_attribute()]
@@ -528,8 +547,7 @@ class _AsmAndAttributesMixin:
                 decl_ext = to_decl_ext(innermost_decl)
                 if asm_label:
                     decl_ext.asm = asm_label
-                if attrs.exprs:
-                    decl_ext.attributes = attrs
+                decl_ext.attributes = attrs
 
                 if innermost_decl is direct:
                     direct = decl_ext
@@ -1092,9 +1110,10 @@ class GnuCParser(_AsmAndAttributesMixin, CParserBase):
             expr = self._parse_constant_expression()
             if self._accept("ELLIPSIS"):
                 last = self._parse_constant_expression()
-                self._expect("RBRACKET")
-                return RangeExpression(expr, last, coord=self._tok_coord(lbrack_tok))
+                expr = RangeExpression(expr, last, coord=self._tok_coord(lbrack_tok))
             self._expect("RBRACKET")
+            if hasattr(c_ast, "ArrayDesignator"):
+                return c_ast.ArrayDesignator(expr, self._tok_coord(lbrack_tok))
             return expr
         if self._accept("PERIOD"):
             return self._parse_identifier_or_typeid()

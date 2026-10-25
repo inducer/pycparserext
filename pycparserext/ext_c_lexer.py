@@ -46,7 +46,18 @@ _OCL_EXTRA_KEYWORDS = {
 }
 
 
-class GnuCLexer(CLexerBase):
+class _AsmLexer(CLexerBase):
+    def _match_token(self):
+        # Keep adjacent asm operand separators separate, even with lexers
+        # that recognize C23's :: attribute namespace separator.
+        if self._lexdata[self._pos:self._pos + 2] == "::":
+            tok = self._make_token("COLON", ":", self._pos)
+            self._pos += 1
+            return tok
+        return super()._match_token()
+
+
+class GnuCLexer(_AsmLexer):
     """GNU C lexer that recognizes GNU-specific keywords."""
 
     _extra_keywords = {**_COMMON_EXTRA_KEYWORDS, **_GNU_EXTRA_KEYWORDS}  # ruff:ignore[mutable-class-default]
@@ -68,7 +79,7 @@ class GNUCLexer(GnuCLexer):
         GnuCLexer.__init__(self, *args, **kwargs)
 
 
-class OpenCLCLexer(CLexerBase):
+class OpenCLCLexer(_AsmLexer):
     """OpenCL C lexer that recognizes OpenCL-specific keywords and line
     comments."""
 
